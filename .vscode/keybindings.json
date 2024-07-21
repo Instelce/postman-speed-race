@@ -1,0 +1,8 @@
+[
+    {
+        "key": "f6",
+        "command": "workbench.action.tasks.runTask",
+        "args": "Run native dev",
+        "when": "editorLangId == 'rust'"
+    }
+]
