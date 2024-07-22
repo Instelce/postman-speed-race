@@ -3,13 +3,16 @@
 
 ## Arts
 
-- Postman
-- Map tiles
-- [x] House 
-- Letter box
+- [x] Postman
+- [x] Map tiles
+- [x] House
+- [x] Letter box
 - Post office
-- Obstacles
-- Objects
+- Obstacles :
+	- [x] Water puddle
+	- [x] Work cone & manhole cover
+- Objects :
+	- [x] Orangebull for dash
 
 ## Dev
 
@@ -26,5 +29,6 @@
 - Objects : 
 	- Dash
 	- Invincibility
+	- Super Fly (Dash + Invincibility) ?
 	- The cheat map
 	- Letter launcher
