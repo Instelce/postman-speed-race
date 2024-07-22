@@ -6,14 +6,15 @@ use serde::{Deserialize, Serialize};
 use super::types::{IntgridType, Tile};
 
 pub const CHUNK_SIZE: i32 = 9;
-pub const PIXEL_CHUNK_SIZE: i32 = CHUNK_SIZE * 16;
+pub const PIXEL_CHUNK_SIZE: f32 = CHUNK_SIZE as f32 * 16.;
 
-#[derive(Default, Serialize, Deserialize, Clone)]
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
 pub struct Chunk {
     pub intgrid_tiles: Vec<IntgridType>,
     pub tileset_tiles: Vec<Tile>,
     pub position: Vec2,
     pub chunk_type: ChunkType,
+    pub connextions: Vec<ChunkConnextion>,
     pub flip_x: bool,
     pub flip_y: bool,
 }
@@ -31,46 +32,8 @@ impl Chunk {
         self.tileset_tiles.get(self.xy_idx(x, y))
     }
 
-    pub fn flip_x(&mut self) {
-        self.intgrid_tiles = (0..CHUNK_SIZE)
-            .map(|y| {
-                (0..CHUNK_SIZE)
-                    .rev()
-                    .map(|x| self.intgrid_at(x, y).unwrap().clone())
-                    .collect::<Vec<IntgridType>>()
-            })
-            .flatten()
-            .collect();
-        self.tileset_tiles = (0..CHUNK_SIZE)
-            .map(|y| {
-                (0..CHUNK_SIZE)
-                    .rev()
-                    .map(|x| self.tile_at(x, y).unwrap().clone())
-                    .collect::<Vec<Tile>>()
-            })
-            .flatten()
-            .collect();
-    }
-
-    pub fn flip_y(&mut self) {
-        self.intgrid_tiles = (0..CHUNK_SIZE)
-            .rev()
-            .map(|y| {
-                (0..CHUNK_SIZE)
-                    .map(|x| self.intgrid_at(x, y).unwrap().clone())
-                    .collect::<Vec<IntgridType>>()
-            })
-            .flatten()
-            .collect();
-        self.tileset_tiles = (0..CHUNK_SIZE)
-            .rev()
-            .map(|y| {
-                (0..CHUNK_SIZE)
-                    .map(|x| self.tile_at(x, y).unwrap().clone())
-                    .collect::<Vec<Tile>>()
-            })
-            .flatten()
-            .collect();
+    pub fn is_empty(&self) -> bool {
+        self.chunk_type == ChunkType::Empty
     }
 }
 
@@ -78,8 +41,9 @@ impl Chunk {
 pub enum ChunkType {
     Road(RoadChunkType),
     House,
-    #[default]
     PostOffice,
+    #[default]
+    Empty,
 }
 
 impl From<&str> for ChunkType {
@@ -116,4 +80,12 @@ pub enum RoadChunkType {
     Horizontal,
     Vertical,
     Turn,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Debug)]
+pub enum ChunkConnextion {
+    Top,
+    Right,
+    Bottom,
+    Left,
 }

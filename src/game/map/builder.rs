@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    chunk::{Chunk, ChunkType, CHUNK_SIZE, PIXEL_CHUNK_SIZE},
+    chunk::{self, Chunk, ChunkConnextion, ChunkType, RoadChunkType, CHUNK_SIZE, PIXEL_CHUNK_SIZE},
     ldtk::Project,
     transformer::generate_level,
     types::IntgridType,
@@ -22,10 +22,12 @@ impl MapBuilder {
         // retrieve all chunks data
         // level of chunks_project = chunk
         let mut chunks = HashMap::new();
+        let mut width = 1;
+        let mut height = 1;
         for level in &chunks_project.levels {
             let csv = level.get_layer("Intgrid").int_grid_csv.clone();
-            let height = level.px_hei / 16;
-            let width = level.px_wid / 16;
+            height = level.px_hei / 16;
+            width = level.px_wid / 16;
 
             // Intgrid tiles
             let mut intgrid_tiles = Vec::new();
@@ -57,7 +59,11 @@ impl MapBuilder {
         Self {
             maps,
             chunks,
-            map: Map::default(),
+            map: Map {
+                chunk_x: width as i32,
+                chunk_y: height as i32,
+                ..default()
+            },
         }
     }
 
@@ -79,18 +85,39 @@ impl MapBuilder {
         for (y, row) in tiles.iter().enumerate() {
             for (x, chunk_tile) in row.iter().enumerate() {
                 let intgrid_value = base[y * map.tile_y() as usize + x];
-                // let chunk_type = MapIntgrid::from(&intgrid_value);
+                let mut chunk = Chunk::default(); // empty chunk
 
                 if chunk_tile.value != 0 {
-                    let mut chunk = self
-                        .chunks
-                        .get(&ChunkType::from(&chunk_tile.value))
-                        .unwrap()
-                        .clone();
-                    chunk.position = Vec2::new(
-                        PIXEL_CHUNK_SIZE as f32 * x as f32,
-                        -PIXEL_CHUNK_SIZE as f32 * y as f32,
-                    );
+                    let chunk_type = ChunkType::from(&chunk_tile.value);
+                    chunk = self.chunks.get(&chunk_type).unwrap().clone();
+                    chunk.position =
+                        Vec2::new(PIXEL_CHUNK_SIZE * x as f32, -PIXEL_CHUNK_SIZE * y as f32);
+
+                    // add connextions
+                    let mut connexions = Vec::new();
+                    if tiles[y - 1][x].value != 0 {
+                        connexions.push(ChunkConnextion::Top);
+                    }
+                    if tiles[y + 1][x].value != 0 {
+                        connexions.push(ChunkConnextion::Bottom);
+                    }
+                    if tiles[y][x + 1].value != 0 {
+                        connexions.push(ChunkConnextion::Right);
+                    }
+                    if tiles[y][x - 1].value != 0 {
+                        connexions.push(ChunkConnextion::Left);
+                    }
+
+                    println!("{:?}, {:?}", chunk_type, connexions);
+                    chunk.connextions = connexions;
+
+                    // set start position
+                    if chunk_type == ChunkType::PostOffice {
+                        self.map.start_position = Vec2::new(
+                            chunk.position.x + PIXEL_CHUNK_SIZE + PIXEL_CHUNK_SIZE / 2. - 8.,
+                            chunk.position.y - PIXEL_CHUNK_SIZE / 2. + 8.,
+                        )
+                    }
 
                     if chunk_tile.value == 2 {
                         chunk.flip_x = true;
@@ -102,11 +129,14 @@ impl MapBuilder {
                         chunk.flip_x = true;
                         chunk.flip_y = true;
                     }
-
-                    self.map.chunks.push(chunk);
                 }
+
+                self.map.chunks.push(chunk);
             }
         }
+
+        println!("{}, {}", self.map.chunk_x, self.map.chunk_y);
+        println!("{:?}", self.map.not_empty_chunks());
     }
 
     pub fn get_map(&self) -> Map {
@@ -114,29 +144,53 @@ impl MapBuilder {
     }
 }
 
-#[derive(Default, Serialize, Deserialize, Clone)]
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
 pub struct Map {
     pub chunk_x: i32,
     pub chunk_y: i32,
     pub chunks: Vec<Chunk>,
+    pub start_position: Vec2,
     // interactables: Vec<Interactable>,
     // houses: Vec<House>,
 }
 
-#[derive(PartialEq, Eq)]
-pub enum MapIntgrid {
-    Road,
-    House,
-    PostOffice,
+impl Map {
+    pub fn get_chunk(&self, x: i32, y: i32) -> &Chunk {
+        &self.chunks[(y * self.chunk_y + x) as usize]
+    }
+
+    /// Return connexions of a chunk
+    pub fn get_connections(&self, x: i32, y: i32) -> Vec<ChunkConnextion> {
+        let mut connexions = Vec::new();
+
+        if !self.get_chunk(x, y + 1).is_empty() {
+            connexions.push(ChunkConnextion::Top);
+        }
+        if !self.get_chunk(x, y - 1).is_empty() {
+            connexions.push(ChunkConnextion::Bottom);
+        }
+        if !self.get_chunk(x + 1, y).is_empty() {
+            connexions.push(ChunkConnextion::Right);
+        }
+        if !self.get_chunk(x - 1, y).is_empty() {
+            connexions.push(ChunkConnextion::Left);
+        }
+
+        if self.get_chunk(x, y).chunk_type == ChunkType::Road(RoadChunkType::Turn) {
+            print!("- {:?}", connexions);
+        }
+
+        connexions.clone()
+    }
+
+    pub fn not_empty_chunks(&self) -> usize {
+        self.chunks.iter().filter(|chunk| !chunk.is_empty()).count()
+    }
 }
 
-impl From<&i64> for MapIntgrid {
-    fn from(value: &i64) -> Self {
-        match value {
-            1 => Self::Road,
-            2 => Self::House,
-            3 => Self::PostOffice,
-            _ => Self::House,
-        }
-    }
+pub struct House {
+    number: i32,
+    position: Vec2,
+    flip_x: bool,
+    flip_y: bool,
 }

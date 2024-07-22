@@ -2,7 +2,10 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 
 use super::Screen;
 use crate::{
-    game::spawn::{level::SpawnLevel, map::MapTag},
+    game::{
+        circuit::Circuit,
+        spawn::{level::SpawnLevel, map::MapTag},
+    },
     ui::palette::BACKGROUND,
 };
 
@@ -30,6 +33,8 @@ fn enter_playing(
     // set camera scale
     let mut projection = camera_query.single_mut();
     projection.scale = 0.2;
+
+    commands.init_resource::<Circuit>();
 }
 
 fn exit_playing(
@@ -44,6 +49,9 @@ fn exit_playing(
     // despawn map
     let map = map.single();
     commands.entity(map).despawn_recursive();
+
+    // remove resources
+    commands.remove_resource::<Circuit>();
 }
 
 fn return_to_title_screen(mut next_screen: ResMut<NextState<Screen>>) {

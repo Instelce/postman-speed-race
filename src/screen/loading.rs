@@ -5,7 +5,8 @@ use bevy_hanabi::EffectAsset;
 use super::Screen;
 
 use crate::game::assets::handles::{
-    AsepriteAssets, Handles, ParticleEffectAssets, SfxAssets, SoundtrackAssets, TilesetAssets,
+    AsepriteAssets, Handles, HouseAssets, ParticleEffectAssets, SfxAssets, SoundtrackAssets,
+    TilesetAssets,
 };
 use crate::ui::prelude::*;
 
@@ -25,6 +26,7 @@ fn enter_loading(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Preload assets so the game runs smoothly.
     commands.insert_resource(AsepriteAssets::new(&asset_server));
     commands.insert_resource(TilesetAssets::new(&asset_server));
+    commands.insert_resource(HouseAssets::new(&asset_server));
     commands.insert_resource(ParticleEffectAssets::new(&asset_server));
     commands.insert_resource(SfxAssets::new(&asset_server));
     commands.insert_resource(SoundtrackAssets::new(&asset_server));
@@ -38,6 +40,7 @@ fn check_all_loaded(
 
     aseprite_handles: Res<AsepriteAssets>,
     tileset_assets: Res<TilesetAssets>,
+    house_assets: Res<HouseAssets>,
     effect_handles: Res<ParticleEffectAssets>,
     sfx_handles: Res<SfxAssets>,
     soundtrack_handles: Res<SoundtrackAssets>,
@@ -46,6 +49,7 @@ fn check_all_loaded(
 ) {
     let all_loaded = aseprite_handles.all_loaded(&aseprite_assets)
         && tileset_assets.all_loaded(&image_assets)
+        && house_assets.all_loaded(&image_assets)
         && effect_handles.all_loaded(&effect_assets)
         && sfx_handles.all_loaded(&audio_assets)
         && soundtrack_handles.all_loaded(&audio_assets);

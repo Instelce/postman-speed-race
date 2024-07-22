@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 pub type MatrixType<T> = Vec<Vec<T>>;
 
-#[derive(PartialEq, Clone, Copy, Serialize, Deserialize)]
+#[derive(PartialEq, Clone, Copy, Serialize, Deserialize, Debug)]
 pub enum IntgridType {
     Road,
     Dirt,
