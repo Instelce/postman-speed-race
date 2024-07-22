@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+mod playing;
 mod credits;
 mod loading;
 mod splash;
@@ -14,7 +15,7 @@ pub(super) fn plugin(app: &mut App) {
         loading::plugin,
         title::plugin,
         credits::plugin,
-        // playing::plugin,
+        playing::plugin,
     ));
 }
 
