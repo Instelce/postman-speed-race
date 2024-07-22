@@ -11,3 +11,5 @@ pub const LABEL_TEXT: Color = Color::Srgba(GRAY_300);
 pub const HEADER_TEXT: Color = Color::srgb(0.867, 0.827, 0.412);
 
 pub const NODE_BACKGROUND: Color = Color::Srgba(INDIGO_400);
+
+pub const BACKGROUND: Color = Color::srgb(0.471, 0.765, 0.286);

@@ -3,17 +3,18 @@
 use bevy_inspector_egui::DefaultInspectorConfigPlugin;
 pub use bevy_pancam::PanCam;
 
-use debug_camera::*;
-use inspector::inspector_ui;
 use bevy::{
-    input::common_conditions::input_toggle_active, prelude::*,
     dev_tools::{
         fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},
         states::log_transitions,
     },
     diagnostic::FrameTimeDiagnosticsPlugin,
+    input::common_conditions::input_toggle_active,
+    prelude::*,
     prelude::*,
 };
+use debug_camera::*;
+use inspector::inspector_ui;
 
 use crate::screen::Screen;
 
@@ -24,7 +25,6 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
         DefaultInspectorConfigPlugin,
         bevy_egui::EguiPlugin,
-
         // Show FPS
         FrameTimeDiagnosticsPlugin::default(),
         FpsOverlayPlugin {
@@ -35,9 +35,8 @@ pub(super) fn plugin(app: &mut App) {
                 },
             },
         },
-
         // Debug camera
-        debug_camera::plugin
+        debug_camera::plugin,
     ));
 
     // Debug context
@@ -49,8 +48,7 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         (
             toggle_debug_context,
-            inspector_ui
-                .run_if(input_toggle_active(false, KeyCode::Escape)),
+            inspector_ui.run_if(input_toggle_active(false, KeyCode::F1)),
         ),
     );
 
@@ -70,10 +68,7 @@ impl Default for DebugContext {
     }
 }
 
-fn toggle_debug_context(
-    keys: Res<ButtonInput<KeyCode>>,
-    mut debug_context: ResMut<DebugContext>,
-) {
+fn toggle_debug_context(keys: Res<ButtonInput<KeyCode>>, mut debug_context: ResMut<DebugContext>) {
     if keys.just_pressed(KeyCode::Semicolon) {
         debug_context.enabled = !debug_context.enabled;
     }

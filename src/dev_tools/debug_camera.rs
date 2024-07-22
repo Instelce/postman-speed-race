@@ -1,10 +1,5 @@
-use bevy::{
-    input::common_conditions::input_just_pressed, math::Affine3A, prelude::*,
-    transform::commands,
-};
+use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_pancam::{PanCam, PanCamPlugin};
-use common::camera::MainCamera;
-
 
 pub(super) fn plugin(app: &mut App) {
     app.insert_resource(DebugCameraSettings::default());
@@ -12,8 +7,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         Update,
         (
-            (toggle_spawn_debug_camera)
-                .run_if(input_just_pressed(KeyCode::Escape)),
+            toggle_spawn_debug_camera.run_if(input_just_pressed(KeyCode::F1)),
             // camera_movement,
         ),
     );
@@ -70,7 +64,7 @@ impl Default for FlyCamera {
 fn toggle_spawn_debug_camera(
     mut commands: Commands,
     mut debug_camera_settings: ResMut<DebugCameraSettings>,
-    main_camera: Query<(Entity, &Transform), With<MainCamera>>,
+    main_camera: Query<(Entity, &Transform), With<Camera>>,
     debug_camera: Query<(Entity, &GlobalTransform), With<DebugCamera>>,
 ) {
     if debug_camera_settings.enable {
@@ -86,7 +80,7 @@ fn toggle_spawn_debug_camera(
         // add main camera
         let mut camera_bundle = Camera2dBundle::default();
         camera_bundle.projection.scale = 0.4;
-        commands.spawn((camera_bundle, MainCamera));
+        commands.spawn(camera_bundle);
     } else {
         debug_camera_settings.enable = true;
 
@@ -115,16 +109,8 @@ pub fn camera_movement(
     if let Ok((mut options, mut transform)) = fly_camera.get_single_mut() {
         let (axis_h, axis_v) = if options.enable {
             (
-                movement_axis(
-                    &keyboard_input,
-                    options.key_right,
-                    options.key_left,
-                ),
-                movement_axis(
-                    &keyboard_input,
-                    options.key_up,
-                    options.key_down,
-                ),
+                movement_axis(&keyboard_input, options.key_right, options.key_left),
+                movement_axis(&keyboard_input, options.key_up, options.key_down),
             )
         } else {
             (0., 0.)
@@ -153,26 +139,20 @@ pub fn camera_movement(
 
         let delta_friction = friction * time.delta_seconds();
 
-        options.velocity = if (options.velocity + delta_friction).signum()
-            != options.velocity.signum()
-        {
-            Vec2::ZERO
-        } else {
-            options.velocity + delta_friction
-        };
+        options.velocity =
+            if (options.velocity + delta_friction).signum() != options.velocity.signum() {
+                Vec2::ZERO
+            } else {
+                options.velocity + delta_friction
+            };
 
-        transform.translation +=
-            Vec3::new(options.velocity.x, options.velocity.y, 0.);
+        transform.translation += Vec3::new(options.velocity.x, options.velocity.y, 0.);
     }
 }
 
 // utils
 
-fn movement_axis(
-    input: &Res<ButtonInput<KeyCode>>,
-    plus_key: KeyCode,
-    minus_key: KeyCode,
-) -> f32 {
+fn movement_axis(input: &Res<ButtonInput<KeyCode>>, plus_key: KeyCode, minus_key: KeyCode) -> f32 {
     let mut axis = 0.;
     if input.pressed(plus_key) {
         axis += 1.;

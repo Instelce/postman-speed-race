@@ -38,23 +38,27 @@ impl Level {
             .find(|layer| layer.identifier == layer_name)
             .unwrap()
     }
+
+    #[inline]
+    pub fn tile_x(&self) -> i64 {
+        self.px_wid / 16
+    }
+
+    #[inline]
+    pub fn tile_y(&self) -> i64 {
+        self.px_hei / 16
+    }
 }
 
 impl LayerDefinition {
-    pub fn get_intgrid_value_definition(
-        &self,
-        value: &i64,
-    ) -> Option<&IntGridValueDefinition> {
+    pub fn get_intgrid_value_definition(&self, value: &i64) -> Option<&IntGridValueDefinition> {
         match self.int_grid_values.iter().position(|v| v.value == *value) {
             Some(indice) => Some(&self.int_grid_values.get(indice).unwrap()),
             None => None,
         }
     }
 
-    pub fn get_intgrid_value_definition_position(
-        &self,
-        value: &i64,
-    ) -> Option<usize> {
+    pub fn get_intgrid_value_definition_position(&self, value: &i64) -> Option<usize> {
         self.int_grid_values.iter().position(|v| v.value == *value)
     }
 

@@ -9,6 +9,7 @@ use bevy::{
     asset::{load_internal_binary_asset, AssetMetaCheck},
     audio::{AudioPlugin, Volume},
     prelude::*,
+    render::texture::ImageSamplerDescriptor,
     winit::WinitWindows,
 };
 use bevy_aseprite_ultra::BevySprityPlugin;
@@ -58,8 +59,14 @@ impl Plugin for AppPlugin {
                         volume: Volume::new(0.3),
                     },
                     ..default()
+                })
+                .set(ImagePlugin {
+                    default_sampler: ImageSamplerDescriptor::nearest(),
                 }),
         );
+
+        // Set Msaa to Off
+        app.insert_resource(Msaa::Off);
 
         // Load custom font.
         load_internal_binary_asset!(

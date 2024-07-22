@@ -1,8 +1,9 @@
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 
 use super::Screen;
-use crate::game::{
-    spawn::level::SpawnLevel,
+use crate::{
+    game::spawn::{level::SpawnLevel, map::MapTag},
+    ui::palette::BACKGROUND,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -16,11 +17,34 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
-fn enter_playing(mut commands: Commands) {
+fn enter_playing(
+    mut commands: Commands,
+    mut clear_color: ResMut<ClearColor>,
+    mut camera_query: Query<&mut OrthographicProjection, With<Camera>>,
+) {
     commands.trigger(SpawnLevel);
+
+    // set background
+    clear_color.0 = BACKGROUND;
+
+    // set camera scale
+    let mut projection = camera_query.single_mut();
+    projection.scale = 0.2;
 }
 
-fn exit_playing(mut commands: Commands) {}
+fn exit_playing(
+    mut commands: Commands,
+    mut camera_query: Query<&mut OrthographicProjection, With<Camera>>,
+    map: Query<Entity, With<MapTag>>,
+) {
+    // reset camera scale
+    let mut projection = camera_query.single_mut();
+    projection.scale = 1.;
+
+    // despawn map
+    let map = map.single();
+    commands.entity(map).despawn_recursive();
+}
 
 fn return_to_title_screen(mut next_screen: ResMut<NextState<Screen>>) {
     next_screen.set(Screen::Title);

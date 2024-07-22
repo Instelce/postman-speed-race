@@ -76,6 +76,15 @@ impl AsepriteAssets {
 }
 
 #[derive(Resource, Reflect, Deref, DerefMut)]
+pub struct TilesetAssets(Handles<Image>);
+
+impl TilesetAssets {
+    pub fn new(asset_server: &AssetServer) -> Self {
+        Self(Handles::new(vec!["png"], Some("images/tiles".into())).load(asset_server))
+    }
+}
+
+#[derive(Resource, Reflect, Deref, DerefMut)]
 pub struct ParticleEffectAssets(Handles<EffectAsset>);
 
 impl ParticleEffectAssets {

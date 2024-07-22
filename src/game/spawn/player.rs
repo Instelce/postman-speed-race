@@ -39,8 +39,8 @@ fn spawn_player(
         Name::new("Player"),
         //
         AsepriteAnimationBundle {
-            aseprite: aseprite_handles.get("player"),
-            animation: Animation::default().with_tag("idle"),
+            aseprite: aseprite_handles.get("postman"),
+            animation: Animation::default().with_tag("ride"),
             ..default()
         },
         //
