@@ -1,0 +1,109 @@
+(
+    capacities: [1000],
+
+    // Spawner
+    spawner: Once((
+        count: 10.,
+        spawn_immediately: false
+    )),
+    spawner: Rate((
+        particles_per_seconds: 10.
+    ))
+    spawner: Burst((
+        count: 10.,
+        period: 1.,
+    )),
+
+    // Example of properties
+    properties: {
+        "velocity": Vec3(20., 0., 0.),
+        "lifetime": F32(1.),
+    },
+
+    init: (
+
+        // Positions
+        position: Circle((
+            center: Literal((0, 0, 0)),
+            radius: Literal(5.),
+            // Default : Vec3::Z
+            axis: Literal((0, 0, 1.)),
+            // Surface or Volume
+            dimension: Surface,
+        )),
+        position: Sphere((
+            center: Literal((0, 0, 0)),
+            radius: Literal(5.),
+            dimension: Surface,
+        )),
+        position: Cone((
+            base_radius: Literal(5.),
+            height: Literal(10.),
+            top_radius: Literal(8.),
+            dimension: Surface,
+        )),
+        position: Attribute(Literal((0, 0, 0))),
+
+        // Velocities
+        velocity: Circle((
+            center: Literal((0, 0, 0)),
+            axis: Literal((0, 0, 1.)),
+            speed: Literal(10.),
+        )),
+        velocity: Sphere((
+            center: Literal((0, 0, 0)),
+            speed: Literal(10.),
+        )),
+        velocity: Tangent((
+            origin: Literal((0, 0, 0)),
+            axis: Literal((0, 0, 1.)),
+            speed: Literal(10.),
+        )),
+        velocity: Attribute(Literal((0, 0, 0))),
+
+        lifetime: Literal(4.),
+        age: Literal(0.),
+        size: Literal(2.),
+        size2: Literal((2., 2.)),
+    ),
+    update: (
+
+        // Accelerations
+        accel: Radial((
+            origin: Literal((0., 0., 0.)),
+            accel: Literal(10.),
+        )),
+        accel: Tangent((
+            origin: Literal((0., 0., 0.)),
+            axis: Literal((0., 0., 1.)),
+            accel: Literal(10.),
+        )),
+        accel: Attribute(Literal((0., 0., 0.))),
+
+        linear_drag: Literal(4.),
+    ),
+    render: (
+        // particle_texture: ,
+        color: (0., 0., 0., 0.),
+        color_over_lifetime: (
+            gradient: [
+                (1.,  (0., 0., 1., 1.)),
+                (0.5, (1., 1., 0., 0.2)),
+                (0.,  (1., 0., 0., 1.)),
+            ],
+        ),
+        size: (0., 0.),
+        size_over_lifetime: (
+            gradient: [
+                (1.,  (2., 2.)),
+                (0.,  (1., 1.)),
+            ],
+            // Default : false
+            screen_space_size: false,
+        ),
+        // orient: ,
+        // flipbook: ,
+        // screen_space_size: ,
+        // round: ,
+    ),
+)

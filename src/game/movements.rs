@@ -45,12 +45,15 @@ pub fn player_movements(
         // vertical axis
         if keys.pressed(KeyCode::KeyW) {
             movement.factor = 1.;
-        }
-        //  else if keys.pressed(KeyCode::KeyS) {
-        //     movement.factor = -1.;
-        // }
-        else {
+        } else {
             movement.factor = 0.;
+        }
+
+        // brake
+        if keys.pressed(KeyCode::KeyS) {
+            movement.friction = 12.;
+        } else {
+            movement.friction = 2.;
         }
 
         // horizontal axis

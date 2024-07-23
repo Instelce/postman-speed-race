@@ -2,10 +2,13 @@ use std::f32::consts::PI;
 
 use bevy::{math::VectorSpace, prelude::*};
 use bevy_aseprite_ultra::prelude::*;
+use bevy_hanabi::{ParticleEffect, ParticleEffectBundle};
 
 use crate::{
     game::{
-        assets::handles::AsepriteAssets, camera::CameraTarget, collider::Collider,
+        assets::handles::{AsepriteAssets, ParticleEffectAssets},
+        camera::CameraTarget,
+        collider::Collider,
         movements::Velocity,
     },
     screen::Screen,
@@ -24,6 +27,10 @@ pub struct SpawnPlayer(pub Vec2);
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
 #[reflect(Component)]
 pub struct Player;
+
+#[derive(Component, Reflect)]
+#[reflect(Component)]
+pub struct PlayerParticles;
 
 #[derive(Component, Debug, Reflect, Default)]
 #[reflect(Component)]
@@ -53,7 +60,8 @@ impl Default for PlayerMovement {
             factor: 0.,
             acceleration: 8. * MULT,
             max_speed: 1. * MULT,
-            friction: 2.25 * MULT,
+            friction: 1. * MULT,
+            // friction: 2.25 * MULT,
             dash_mul: 2.,
         }
     }
@@ -63,27 +71,39 @@ fn spawn_player(
     trigger: Trigger<SpawnPlayer>,
     mut commands: Commands,
     aseprite_handles: Res<AsepriteAssets>,
+    particles: Res<ParticleEffectAssets>,
 ) {
-    commands.spawn((
-        Name::new("Player"),
-        //
-        AsepriteAnimationBundle {
-            aseprite: aseprite_handles.get("postman"),
-            animation: Animation::default().with_tag("ride"),
-            transform: Transform::from_translation(trigger.event().0.extend(0.1))
-                .with_rotation(Quat::from_axis_angle(Vec3::Z, -PI / 2.))
-                .with_scale(Vec3::new(1.5, 1.5, 0.)),
-            ..default()
-        },
-        //
-        Player,
-        PlayerController::default(),
-        PlayerMovement::default(),
-        Velocity::default(),
-        Collider::rect(5., 5.),
-        //
-        CameraTarget,
-        //
-        StateScoped(Screen::Playing),
-    ));
+    commands
+        .spawn((
+            Name::new("Player"),
+            //
+            AsepriteAnimationBundle {
+                aseprite: aseprite_handles.get("postman"),
+                animation: Animation::default().with_tag("ride"),
+                transform: Transform::from_translation(trigger.event().0.extend(0.1))
+                    .with_rotation(Quat::from_axis_angle(Vec3::Z, -PI / 2.))
+                    .with_scale(Vec3::new(1.5, 1.5, 0.)),
+                ..default()
+            },
+            //
+            Player,
+            PlayerController::default(),
+            PlayerMovement::default(),
+            Velocity::default(),
+            Collider::rect(5., 5.),
+            //
+            CameraTarget,
+            //
+            StateScoped(Screen::Playing),
+        ))
+        .with_children(|children| {
+            children.spawn((
+                ParticleEffectBundle {
+                    effect: ParticleEffect::new(particles.get("player")),
+                    transform: Transform::from_translation(Vec3::new(0., -9., 0.)),
+                    ..default()
+                },
+                PlayerParticles,
+            ));
+        });
 }

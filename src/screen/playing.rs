@@ -43,15 +43,10 @@ fn enter_playing(
 fn exit_playing(
     mut commands: Commands,
     mut camera_query: Query<&mut OrthographicProjection, With<Camera>>,
-    map: Query<Entity, With<MapTag>>,
 ) {
     // reset camera scale
     let mut projection = camera_query.single_mut();
     projection.scale = 1.;
-
-    // despawn map
-    let map = map.single();
-    commands.entity(map).despawn_recursive();
 
     // remove resources
     commands.remove_resource::<Circuit>();

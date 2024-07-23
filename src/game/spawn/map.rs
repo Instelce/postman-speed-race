@@ -22,6 +22,7 @@ use crate::{
             ldtk::Project,
         },
     },
+    screen::Screen,
     utils::get_asset_path,
 };
 
@@ -87,7 +88,12 @@ fn spawn_map(
     commands.trigger(SpawnPlayer(map.start_position));
 
     let map_entity = commands
-        .spawn((Name::new("Map"), SpatialBundle::default(), MapTag))
+        .spawn((
+            Name::new("Map"),
+            StateScoped(Screen::Playing),
+            SpatialBundle::default(),
+            MapTag,
+        ))
         .id();
 
     // Spawn chunks
@@ -129,16 +135,6 @@ fn spawn_map(
                 ChunkTag,
             ))
             .with_children(|children| {
-                // top left of chunk
-                // children.spawn(SpriteBundle {
-                //     sprite: Sprite {
-                //         color: Color::Srgba(ORANGE),
-                //         rect: Some(Rect::from_center_half_size(Vec2::ZERO, Vec2::splat(1.))),
-                //         ..default()
-                //     },
-                //     ..default()
-                // });
-
                 // Tiles spawn
                 for y in 0..CHUNK_SIZE {
                     for x in 0..CHUNK_SIZE {

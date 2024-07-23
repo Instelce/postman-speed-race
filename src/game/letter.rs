@@ -180,8 +180,10 @@ pub fn launch_letter(
                 AsepriteAnimationBundle {
                     aseprite: aseprites.get("letter"),
                     animation: Animation::default().with_tag("default"),
-                    transform: Transform::from_translation(transform.translation + Vec3::X * -8.)
-                        .with_scale(Vec2::splat(0.5).extend(0.)),
+                    transform: Transform::from_translation(
+                        transform.translation.xy().extend(0.5) + Vec3::X * -8.,
+                    )
+                    .with_scale(Vec2::splat(0.5).extend(0.)),
                     ..default()
                 },
                 Collider::rect(4., 4.),

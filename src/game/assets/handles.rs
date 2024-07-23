@@ -98,9 +98,7 @@ pub struct ParticleEffectAssets(Handles<EffectAsset>);
 
 impl ParticleEffectAssets {
     pub fn new(asset_server: &AssetServer) -> Self {
-        Self(
-            Handles::new(vec!["particle.ron"], Some("configs/particles".into())).load(asset_server),
-        )
+        Self(Handles::new(vec!["ron"], Some("particles".into())).load(asset_server))
     }
 }
 

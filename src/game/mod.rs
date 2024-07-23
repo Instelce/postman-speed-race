@@ -1,5 +1,6 @@
 use bevy::app::App;
 
+pub mod animation;
 pub mod assets;
 mod audio;
 mod camera;
@@ -17,6 +18,7 @@ pub(super) fn plugin(app: &mut App) {
         assets::loaders::plugin,
         spawn::plugin,
         ui::plugin,
+        animation::plugin,
         camera::plugin,
         movements::plugin,
         circuit::plugin,
