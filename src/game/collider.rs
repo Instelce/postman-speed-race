@@ -44,12 +44,12 @@ pub fn colliders_gizmos(
 
 fn update_colliders(
     mut query: Query<
-        (&Transform, &mut Collider),
+        (&GlobalTransform, &mut Collider),
         (Without<ChunkTag>, Without<ExcludeColliderUpdate>),
     >,
 ) {
     for (transform, mut collider) in query.iter_mut() {
-        collider.pos(transform.translation.xy());
+        collider.pos(transform.translation().xy());
     }
 }
 
@@ -61,7 +61,7 @@ pub struct Circle {
     pub radius: f32,
 }
 
-#[derive(Component, Reflect, Debug)]
+#[derive(Component, Reflect, Debug, Clone)]
 #[reflect(Component)]
 pub enum Collider {
     Rect(Rect),

@@ -221,6 +221,7 @@ fn spawn_map(
                             transform: Transform::from_translation(letter_box_position.extend(0.)),
                             ..default()
                         },
+                        Collider::rect(8., 8.),
                         LetterBox,
                     ))
                     .id();

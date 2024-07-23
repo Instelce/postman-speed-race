@@ -25,14 +25,13 @@ pub struct SpawnPlayer(pub Vec2);
 #[reflect(Component)]
 pub struct Player;
 
-#[derive(Component, Debug, Reflect)]
+#[derive(Component, Debug, Reflect, Default)]
 #[reflect(Component)]
-pub struct PlayerController {}
-
-impl Default for PlayerController {
-    fn default() -> Self {
-        Self {}
-    }
+pub struct PlayerController {
+    pub can_launch_letter: bool,
+    pub letter_target: Option<Entity>,
+    pub closest_launch_zone: Option<Collider>,
+    pub letter_launched: bool,
 }
 
 #[derive(Component, Reflect)]
@@ -71,7 +70,7 @@ fn spawn_player(
         AsepriteAnimationBundle {
             aseprite: aseprite_handles.get("postman"),
             animation: Animation::default().with_tag("ride"),
-            transform: Transform::from_translation(trigger.event().0.extend(0.01))
+            transform: Transform::from_translation(trigger.event().0.extend(0.1))
                 .with_rotation(Quat::from_axis_angle(Vec3::Z, -PI / 2.))
                 .with_scale(Vec3::new(1.5, 1.5, 0.)),
             ..default()

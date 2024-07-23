@@ -1,27 +1,38 @@
 use bevy::{color::palettes::css::RED, prelude::*, ui::Val::*};
-use bevy_aseprite_ultra::prelude::{Animation, AnimationRepeat, AsepriteAnimationUiBundle};
+use bevy_aseprite_ultra::prelude::{
+    Animation, AnimationRepeat, AsepriteAnimationBundle, AsepriteAnimationUiBundle,
+};
 
-use crate::screen::Screen;
+use crate::{screen::Screen, AppSet};
 
 use super::{
     assets::handles::AsepriteAssets,
     collider::Collider,
-    spawn::player::{self, Player},
+    spawn::player::{self, Player, PlayerController},
 };
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<(
         Letters,
         LetterBox,
-        LetterBoxFocus,
+        LetterTarget,
+        Letter,
         LetterLaunchZone,
         LetterUi,
     )>();
 
     app.add_systems(
         Update,
-        (update_letter_ui, launch_letter, animate_letter_box).run_if(in_state(Screen::Playing)),
+        (
+            update_letter_ui,
+            launch_zone_detection,
+            animate_letter_box,
+            launch_letter.in_set(AppSet::RecordInput),
+            remove_letter,
+        )
+            .run_if(in_state(Screen::Playing)),
     );
+    app.add_systems(FixedUpdate, (move_letter).run_if(in_state(Screen::Playing)));
 }
 
 #[derive(Resource, Reflect, Debug, Default, PartialEq, Eq, Clone)]
@@ -40,17 +51,22 @@ impl Letters {
     }
 }
 
+// Link the launch zone to letter box
 #[derive(Component, Reflect, Debug)]
 #[reflect(Component)]
 pub struct LetterLaunchZone(pub Entity);
 
 #[derive(Component, Reflect, Debug)]
 #[reflect(Component)]
-pub struct LetterBoxFocus;
+pub struct LetterBox;
 
 #[derive(Component, Reflect, Debug)]
 #[reflect(Component)]
-pub struct LetterBox;
+pub struct Letter;
+
+#[derive(Component, Reflect, Debug)]
+#[reflect(Component)]
+pub struct LetterTarget;
 
 #[derive(Component, Reflect, Debug, Default)]
 #[reflect(Component)]
@@ -94,36 +110,135 @@ pub fn update_letter_ui(
     }
 }
 
-pub fn launch_letter(
+pub fn launch_zone_detection(
     mut gizmos: Gizmos,
     mut commands: Commands,
-    player_query: Query<(&Collider), With<Player>>,
+    mut player_query: Query<(&Collider, &mut PlayerController), With<Player>>,
     launch_zone_query: Query<(&Collider, &LetterLaunchZone), Without<Player>>,
 ) {
-    if let Ok(player_collider) = player_query.get_single() {
+    if let Ok((player_collider, mut controller)) = player_query.get_single_mut() {
         for (zone_collider, zone) in launch_zone_query.iter() {
+            // Enter a launch zone
             if player_collider.collide(zone_collider) {
                 #[cfg(feature = "dev")]
                 gizmos.rect_2d(zone_collider.center(), 0., zone_collider.size() - 10., RED);
 
-                commands.entity(zone.0).insert(LetterBoxFocus);
-            } else {
-                commands.entity(zone.0).remove::<LetterBoxFocus>();
+                if !controller.can_launch_letter {
+                    controller.can_launch_letter = true;
+                    controller.closest_launch_zone = Some(zone_collider.clone());
+                    controller.letter_target = Some(zone.0);
+                }
+
+                commands.entity(zone.0).insert(LetterTarget);
+            }
+
+            // Quit the launch zone
+            if let Some(collider) = &controller.closest_launch_zone {
+                if !player_collider.collide(collider) {
+                    controller.can_launch_letter = false;
+                    controller.closest_launch_zone = None;
+                    controller.letter_target = None;
+                    controller.letter_launched = false;
+
+                    commands.entity(zone.0).remove::<LetterTarget>();
+                }
             }
         }
     }
 }
 
 pub fn animate_letter_box(
-    mut query: Query<(&mut Animation, Option<&LetterBoxFocus>), With<LetterBox>>,
+    mut query: Query<(&mut Animation, Option<&LetterTarget>), With<LetterBox>>,
 ) {
     for (mut animation, focus) in query.iter_mut() {
         if let Some(_) = focus {
-            animation.play("focus", AnimationRepeat::Loop);
+            if animation.tag != Some("letter-enter".into()) {
+                animation.play("focus", AnimationRepeat::Loop);
+            }
         } else {
             if animation.tag == Some("focus".into()) {
                 animation.play("close", AnimationRepeat::Loop);
             }
+        }
+    }
+}
+
+pub fn launch_letter(
+    mut commands: Commands,
+    keys: Res<ButtonInput<KeyCode>>,
+    mut player_query: Query<(&Transform, &mut PlayerController, &mut Animation), With<Player>>,
+    aseprites: Res<AsepriteAssets>,
+) {
+    if let Ok((transform, mut controller, mut animation)) = player_query.get_single_mut() {
+        if keys.pressed(KeyCode::Space)
+            && controller.can_launch_letter
+            && !controller.letter_launched
+        {
+            // Spawn letter
+            commands.spawn((
+                Name::new("Letter"),
+                AsepriteAnimationBundle {
+                    aseprite: aseprites.get("letter"),
+                    animation: Animation::default().with_tag("default"),
+                    transform: Transform::from_translation(transform.translation + Vec3::X * -8.)
+                        .with_scale(Vec2::splat(0.5).extend(0.)),
+                    ..default()
+                },
+                Collider::rect(4., 4.),
+                Letter,
+            ));
+
+            // Animate player
+            animation.play("launch-letter", AnimationRepeat::Count(0));
+            animation.then("ride", AnimationRepeat::Loop);
+
+            controller.letter_launched = true;
+        }
+    }
+}
+
+pub fn move_letter(
+    time: Res<Time>,
+    mut letter_query: Query<&mut Transform, With<Letter>>,
+    target_query: Query<&GlobalTransform, (With<LetterTarget>, Without<Letter>)>,
+) {
+    if let Ok(mut letter_transfrom) = letter_query.get_single_mut() {
+        if let Ok(target_transfrom) = target_query.get_single() {
+            letter_transfrom.translation = letter_transfrom
+                .translation
+                .lerp(target_transfrom.translation(), time.delta_seconds() * 4.);
+        }
+    }
+}
+
+fn remove_letter(
+    mut commands: Commands,
+    letter_query: Query<(Entity, &Collider), With<Letter>>,
+    mut target_query: Query<
+        (Entity, &Collider, &mut Animation),
+        (With<LetterTarget>, Without<Letter>),
+    >,
+    mut letters: ResMut<Letters>,
+) {
+    if let Ok((letter, letter_collider)) = letter_query.get_single() {
+        if let Ok((letter_box, target_collider, mut target_animation)) =
+            target_query.get_single_mut()
+        {
+            if letter_collider.collide(target_collider) {
+                // Remove the letter and play letter box animation
+                target_animation.play("letter-enter", AnimationRepeat::Count(0));
+                target_animation.then("close", AnimationRepeat::Loop);
+
+                commands.entity(letter).despawn();
+
+                // Update letters
+                letters.to_post -= 1;
+            }
+        }
+    } else {
+        // TODO mdr si j'ai le temps
+        for (entity, _, _) in target_query.iter() {
+            commands.entity(entity).remove::<LetterTarget>();
         }
     }
 }
