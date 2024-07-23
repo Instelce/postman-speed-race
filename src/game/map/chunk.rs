@@ -15,6 +15,7 @@ pub struct Chunk {
     pub position: Vec2,
     pub chunk_type: ChunkType,
     pub connextions: Vec<ChunkConnextion>,
+    pub house: Option<House>,
     pub flip_x: bool,
     pub flip_y: bool,
 }
@@ -34,6 +35,10 @@ impl Chunk {
 
     pub fn is_empty(&self) -> bool {
         self.chunk_type == ChunkType::Empty
+    }
+
+    pub fn has_connexion(&self, connexion: ChunkConnextion) -> bool {
+        self.connextions.contains(&connexion)
     }
 }
 
@@ -88,4 +93,10 @@ pub enum ChunkConnextion {
     Right,
     Bottom,
     Left,
+}
+
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
+pub struct House {
+    pub position: Vec2,
+    pub rotation: f32,
 }

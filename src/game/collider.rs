@@ -42,7 +42,12 @@ pub fn colliders_gizmos(
     }
 }
 
-fn update_colliders(mut query: Query<(&Transform, &mut Collider), Without<ChunkTag>>) {
+fn update_colliders(
+    mut query: Query<
+        (&Transform, &mut Collider),
+        (Without<ChunkTag>, Without<ExcludeColliderUpdate>),
+    >,
+) {
     for (transform, mut collider) in query.iter_mut() {
         collider.pos(transform.translation.xy());
     }
@@ -62,6 +67,10 @@ pub enum Collider {
     Rect(Rect),
     Circle(Circle),
 }
+
+#[derive(Component, Reflect, Debug)]
+#[reflect(Component)]
+pub struct ExcludeColliderUpdate;
 
 // https://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection
 // https://www.jeffreythompson.org/collision-detection/circle-rect.php

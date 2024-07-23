@@ -66,7 +66,7 @@ pub fn player_movements(
             movement.direction.x = 0.;
         }
 
-        if circuit.direction_chosen {
+        if circuit.direction_chosen && !circuit.in_turn {
             // reset player rotation to the circuit direction
 
             let mut reset_angle = match circuit.direction {
@@ -77,7 +77,7 @@ pub fn player_movements(
             let turn = (circuit.turn_count) as f32 * PI / 2.;
 
             reset_angle += match circuit.direction {
-                CircuitDirection::AntiClockwise => turn,
+                CircuitDirection::AntiClockwise => -turn,
                 CircuitDirection::Clockwise => -turn,
             };
 
@@ -85,8 +85,8 @@ pub fn player_movements(
                 Quat::from_axis_angle(Vec3::Z, reset_angle),
                 time.delta_seconds() * 10.,
             );
-        } else {
-            // set circuit direction
+        } else if !circuit.direction_chosen {
+            // set circuit direction when the player start
             if rotation_factor > 0. {
                 circuit.direction = CircuitDirection::Clockwise;
                 circuit.direction_chosen = true;
@@ -98,9 +98,11 @@ pub fn player_movements(
 
         // rotate player
         if movement.direction.y != 0. {
+            let speed = if circuit.in_turn { 6.5 } else { 5. };
+
             if rotation_factor == 0. {
             } else {
-                transform.rotate_z(rotation_factor * 5. * time.delta_seconds());
+                transform.rotate_z(rotation_factor * speed * time.delta_seconds());
             }
         }
 

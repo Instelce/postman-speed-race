@@ -4,7 +4,9 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    chunk::{self, Chunk, ChunkConnextion, ChunkType, RoadChunkType, CHUNK_SIZE, PIXEL_CHUNK_SIZE},
+    chunk::{
+        self, Chunk, ChunkConnextion, ChunkType, House, RoadChunkType, CHUNK_SIZE, PIXEL_CHUNK_SIZE,
+    },
     ldtk::Project,
     transformer::generate_level,
     types::IntgridType,
@@ -43,6 +45,15 @@ impl MapBuilder {
                 None,
             );
 
+            // Houses
+            let mut house = None;
+            for entity in level.get_layer("Houses").entity_instances.iter() {
+                house = Some(House {
+                    position: Vec2::new(entity.px[0] as f32, entity.px[1] as f32),
+                    ..default()
+                });
+            }
+
             let chunk_type = ChunkType::from(level.identifier.as_str());
 
             chunks.insert(
@@ -51,6 +62,7 @@ impl MapBuilder {
                     intgrid_tiles,
                     tileset_tiles: tiles.into_iter().flatten().collect(),
                     chunk_type,
+                    house,
                     ..default()
                 },
             );
@@ -134,9 +146,6 @@ impl MapBuilder {
                 self.map.chunks.push(chunk);
             }
         }
-
-        println!("{}, {}", self.map.chunk_x, self.map.chunk_y);
-        println!("{:?}", self.map.not_empty_chunks());
     }
 
     pub fn get_map(&self) -> Map {
@@ -151,7 +160,6 @@ pub struct Map {
     pub chunks: Vec<Chunk>,
     pub start_position: Vec2,
     // interactables: Vec<Interactable>,
-    // houses: Vec<House>,
 }
 
 impl Map {
@@ -159,38 +167,14 @@ impl Map {
         &self.chunks[(y * self.chunk_y + x) as usize]
     }
 
-    /// Return connexions of a chunk
-    pub fn get_connections(&self, x: i32, y: i32) -> Vec<ChunkConnextion> {
-        let mut connexions = Vec::new();
-
-        if !self.get_chunk(x, y + 1).is_empty() {
-            connexions.push(ChunkConnextion::Top);
-        }
-        if !self.get_chunk(x, y - 1).is_empty() {
-            connexions.push(ChunkConnextion::Bottom);
-        }
-        if !self.get_chunk(x + 1, y).is_empty() {
-            connexions.push(ChunkConnextion::Right);
-        }
-        if !self.get_chunk(x - 1, y).is_empty() {
-            connexions.push(ChunkConnextion::Left);
-        }
-
-        if self.get_chunk(x, y).chunk_type == ChunkType::Road(RoadChunkType::Turn) {
-            print!("- {:?}", connexions);
-        }
-
-        connexions.clone()
-    }
-
     pub fn not_empty_chunks(&self) -> usize {
         self.chunks.iter().filter(|chunk| !chunk.is_empty()).count()
     }
-}
 
-pub struct House {
-    number: i32,
-    position: Vec2,
-    flip_x: bool,
-    flip_y: bool,
+    pub fn count_chunk(&self, chunk_type: ChunkType) -> i32 {
+        self.chunks
+            .iter()
+            .filter(|c| c.chunk_type == chunk_type)
+            .count() as i32
+    }
 }

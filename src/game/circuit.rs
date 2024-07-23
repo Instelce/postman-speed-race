@@ -1,6 +1,6 @@
 use std::default;
 
-use bevy::{color::palettes::css::INDIGO, prelude::*};
+use bevy::{color::palettes::css::BLUE, prelude::*};
 
 use crate::{screen::Screen, AppSet};
 
@@ -28,7 +28,11 @@ pub(super) fn plugin(app: &mut App) {
 pub struct Circuit {
     pub current_orientation: CircuitOrientation,
     pub turn_count: i32,
+    #[reflect(ignore)]
     pub turn: Vec<Entity>,
+    #[reflect(ignore)]
+    pub already_collide: Vec<Entity>,
+    pub in_turn: bool,
     pub direction: CircuitDirection,
     pub direction_chosen: bool,
 }
@@ -67,21 +71,23 @@ fn update_circuit(
             ) {
                 match &orientation {
                     ChunkRoad::Turn => {
+                        #[cfg(feature = "dev")]
                         gizmos.rect_2d(
                             chunk_collider.center(),
                             0.,
                             chunk_collider.size() - 10.,
-                            Color::Srgba(INDIGO),
+                            Color::Srgba(BLUE),
                         );
 
                         if !circuit.turn.contains(&chunk_entity) {
-                            println!("{:?}", connextions);
                             let t = match (&collision, &circuit.current_orientation) {
                                 (Collision::Bottom, CircuitOrientation::Vertical) => {
                                     println!("1");
                                     let r = if connextions.contains(&ChunkConnextion::Left) {
+                                        println!("Turn left");
                                         -1
                                     } else if connextions.contains(&ChunkConnextion::Right) {
+                                        println!("Turn right");
                                         1
                                     } else {
                                         0
@@ -91,8 +97,10 @@ fn update_circuit(
                                 (Collision::Left, CircuitOrientation::Horizontal) => {
                                     println!("2");
                                     let r = if connextions.contains(&ChunkConnextion::Top) {
+                                        println!("Turn left");
                                         -1
                                     } else if connextions.contains(&ChunkConnextion::Bottom) {
+                                        println!("Turn right");
                                         1
                                     } else {
                                         0
@@ -102,8 +110,10 @@ fn update_circuit(
                                 (Collision::Top, CircuitOrientation::Vertical) => {
                                     println!("3");
                                     let r = if connextions.contains(&ChunkConnextion::Left) {
+                                        println!("Turn right");
                                         1
                                     } else if connextions.contains(&ChunkConnextion::Right) {
+                                        println!("Turn left");
                                         -1
                                     } else {
                                         0
@@ -113,8 +123,10 @@ fn update_circuit(
                                 (Collision::Right, CircuitOrientation::Horizontal) => {
                                     println!("4");
                                     let r = if connextions.contains(&ChunkConnextion::Top) {
+                                        println!("Turn right");
                                         1
                                     } else if connextions.contains(&ChunkConnextion::Bottom) {
+                                        println!("Turn left");
                                         -1
                                     } else {
                                         0
@@ -124,6 +136,8 @@ fn update_circuit(
 
                                 _ => 0,
                             };
+
+                            circuit.in_turn = true;
 
                             circuit.turn_count += t;
 
@@ -135,7 +149,12 @@ fn update_circuit(
                             circuit.turn.push(chunk_entity);
                         }
                     }
-                    _ => {}
+                    _ => {
+                        if !circuit.already_collide.contains(&chunk_entity) {
+                            circuit.in_turn = false;
+                            circuit.already_collide.push(chunk_entity);
+                        }
+                    }
                 }
             }
         }

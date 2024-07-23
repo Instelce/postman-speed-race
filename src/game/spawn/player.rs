@@ -72,7 +72,8 @@ fn spawn_player(
             aseprite: aseprite_handles.get("postman"),
             animation: Animation::default().with_tag("ride"),
             transform: Transform::from_translation(trigger.event().0.extend(0.01))
-                .with_rotation(Quat::from_axis_angle(Vec3::Z, -PI / 2.)),
+                .with_rotation(Quat::from_axis_angle(Vec3::Z, -PI / 2.))
+                .with_scale(Vec3::new(1.5, 1.5, 0.)),
             ..default()
         },
         //
@@ -80,7 +81,7 @@ fn spawn_player(
         PlayerController::default(),
         PlayerMovement::default(),
         Velocity::default(),
-        Collider::rect(5., 9.),
+        Collider::rect(5., 5.),
         //
         CameraTarget,
         //

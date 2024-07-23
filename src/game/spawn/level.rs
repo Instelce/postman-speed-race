@@ -10,5 +10,5 @@ pub(super) fn plugin(app: &mut App) {
 pub struct SpawnLevel;
 
 fn spawn_level(_trigger: Trigger<SpawnLevel>, mut commands: Commands) {
-    commands.trigger(SpawnMap { level: 2 })
+    commands.trigger(SpawnMap { level: 0 })
 }

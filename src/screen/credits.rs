@@ -4,7 +4,7 @@ use crate::{
     game::assets::handles::AsepriteAssets,
     ui::{
         interaction::InteractionQuery,
-        prelude::{Containers, HeadingSize, Widgets},
+        prelude::{Containers, HeadingSize, RootAnchor, Widgets},
     },
     utils::{get_root_file, read_lines},
 };
@@ -29,7 +29,7 @@ enum CreditsAction {
 
 fn enter_credits(mut commands: Commands, aseprite_handles: Res<AsepriteAssets>) {
     commands
-        .centered_ui_root()
+        .ui_root(RootAnchor::Center)
         .insert(StateScoped(Screen::Credits))
         .with_children(|children| {
             // Spawn credits from the CREDITS.md file

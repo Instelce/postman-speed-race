@@ -1,4 +1,4 @@
-use bevy::{ecs::system::EntityCommands, prelude::*, ui::Val::*};
+use bevy::{ecs::system::EntityCommands, prelude::*, sprite::Anchor, ui::Val::*};
 use bevy_aseprite_ultra::prelude::{Animation, Aseprite, AsepriteAnimationUiBundle};
 
 use super::{
@@ -27,14 +27,13 @@ impl Spawn for ChildBuilder<'_> {
 
 /// An extension trait for spawning UI containers.
 pub trait Containers {
-    fn centered_ui_root(&mut self) -> EntityCommands;
+    fn ui_root(&mut self, anchor: RootAnchor) -> EntityCommands;
 }
 
 impl Containers for Commands<'_, '_> {
-    fn centered_ui_root(&mut self) -> EntityCommands {
-        self.spawn((
-            Name::new("Centered UI Root"),
-            NodeBundle {
+    fn ui_root(&mut self, anchor: RootAnchor) -> EntityCommands {
+        let node = match anchor {
+            RootAnchor::Center => NodeBundle {
                 style: Style {
                     width: Percent(100.),
                     height: Percent(100.),
@@ -47,8 +46,38 @@ impl Containers for Commands<'_, '_> {
                 },
                 ..default()
             },
-        ))
+            RootAnchor::TopLeft => NodeBundle {
+                style: Style {
+                    margin: UiRect::all(Px(10.)),
+                    width: Percent(50.),
+                    height: Percent(50.),
+                    justify_content: JustifyContent::FlexStart,
+                    align_items: AlignItems::FlexStart,
+                    flex_direction: FlexDirection::Column,
+                    row_gap: Px(10.),
+                    position_type: PositionType::Absolute,
+                    ..default()
+                },
+                ..default()
+            },
+            _ => NodeBundle::default(),
+        };
+
+        self.spawn((Name::new(format!("UI Root {:?}", anchor)), node))
     }
+}
+
+#[derive(PartialEq, Eq, Debug)]
+pub enum RootAnchor {
+    Center,
+    BottomLeft,
+    // BottomCenter,
+    BottomRight,
+    // CenterLeft,
+    // CenterRight,
+    TopLeft,
+    // TopCenter,
+    TopRight,
 }
 
 /// Widget customizations.

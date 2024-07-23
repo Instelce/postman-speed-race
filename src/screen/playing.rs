@@ -4,6 +4,8 @@ use super::Screen;
 use crate::{
     game::{
         circuit::Circuit,
+        house::HouseRotate,
+        letter::Letters,
         spawn::{level::SpawnLevel, map::MapTag},
     },
     ui::palette::BACKGROUND,
@@ -32,9 +34,10 @@ fn enter_playing(
 
     // set camera scale
     let mut projection = camera_query.single_mut();
-    projection.scale = 0.2;
+    projection.scale = 0.4;
 
     commands.init_resource::<Circuit>();
+    commands.init_resource::<HouseRotate>();
 }
 
 fn exit_playing(
@@ -52,6 +55,8 @@ fn exit_playing(
 
     // remove resources
     commands.remove_resource::<Circuit>();
+    commands.remove_resource::<HouseRotate>();
+    commands.remove_resource::<Letters>();
 }
 
 fn return_to_title_screen(mut next_screen: ResMut<NextState<Screen>>) {

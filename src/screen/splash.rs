@@ -89,7 +89,7 @@ fn apply_background_fade_in_out(
 
 fn spawn_splash(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
-        .centered_ui_root()
+        .ui_root(RootAnchor::Center)
         .insert((
             Name::new("Spash Container"),
             BackgroundColor(SPLASH_BACKGROUND_COLOR),

@@ -25,7 +25,7 @@ enum TitleAction {
 
 fn enter_title(mut commands: Commands, aseprite_handles: Res<AsepriteAssets>) {
     commands
-        .centered_ui_root()
+        .ui_root(RootAnchor::Center)
         .insert(StateScoped(Screen::Title))
         .with_children(|children| {
             children.heading("Game", HeadingSize::H1);

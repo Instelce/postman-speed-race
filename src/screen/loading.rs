@@ -17,7 +17,7 @@ pub(super) fn plugin(app: &mut App) {
 
 fn enter_loading(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
-        .centered_ui_root()
+        .ui_root(RootAnchor::Center)
         .insert(StateScoped(Screen::Loading))
         .with_children(|children| {
             children.label("Loading...");
