@@ -41,7 +41,6 @@ pub struct PlayerController {
     pub letter_launched: bool,
     pub actual_collision: Option<Collider>,
     pub actual_chunk: Option<Collider>,
-    pub end_timer: Timer,
 }
 
 impl Default for PlayerController {
@@ -53,7 +52,6 @@ impl Default for PlayerController {
             letter_launched: false,
             actual_collision: None,
             actual_chunk: None,
-            end_timer: Timer::from_seconds(1., TimerMode::Once),
         }
     }
 }

@@ -89,6 +89,10 @@ pub enum ButtonSize {
     Squared,
 }
 
+#[derive(Component, Debug, Reflect)]
+#[reflect(Component)]
+pub struct DisableButton;
+
 pub enum HeadingSize {
     H1,
     H2,
@@ -198,6 +202,7 @@ impl<T: Spawn> Widgets for T {
                     height,
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
+                    padding: UiRect::all(Px(10.)),
                     ..default()
                 },
                 ..default()

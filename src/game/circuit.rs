@@ -12,24 +12,28 @@ use super::{
         map::{ChunkConnextions, ChunkRoad, ChunkTag, EndChunk},
         player::Player,
     },
+    GameState,
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.init_state::<CircuitState>();
     app.register_type::<Circuit>();
     app.add_systems(
         Update,
-        (update_circuit, check_end)
-            .in_set(AppSet::Update)
+        (
+            (
+                update_circuit,
+                check_end.run_if(not(in_state(GameState::EndScreen))),
+            )
+                .in_set(AppSet::Update),
+            // at end
+            (
+                tick_end_timer.in_set(AppSet::TickTimers),
+                check_end_timer.in_set(AppSet::Update),
+            )
+                .run_if(in_state(GameState::End)),
+        )
             .run_if(in_state(Screen::Playing)),
     );
-}
-
-#[derive(States, Debug, Hash, PartialEq, Eq, Clone, Default)]
-pub enum CircuitState {
-    #[default]
-    Run,
-    End,
 }
 
 #[derive(Resource, Reflect, Debug, Default)]
@@ -60,8 +64,18 @@ pub enum CircuitOrientation {
     Vertical,
 }
 
+#[derive(Resource, Reflect, Debug, Deref, DerefMut)]
+#[reflect(Resource)]
+pub struct EndCircuitTimer(pub Timer);
+
+impl Default for EndCircuitTimer {
+    fn default() -> Self {
+        Self(Timer::from_seconds(1.5, TimerMode::Once))
+    }
+}
+
 fn update_circuit(
-    mut gizmos: Gizmos,
+    // mut gizmos: Gizmos,
     time: Res<Time>,
     mut circuit: ResMut<Circuit>,
     player_query: Query<&Collider, With<Player>>,
@@ -80,13 +94,13 @@ fn update_circuit(
             ) {
                 match &orientation {
                     ChunkRoad::Turn => {
-                        #[cfg(feature = "dev")]
-                        gizmos.rect_2d(
-                            chunk_collider.center(),
-                            0.,
-                            chunk_collider.size() - 10.,
-                            Color::Srgba(BLUE),
-                        );
+                        // #[cfg(feature = "dev")]
+                        // gizmos.rect_2d(
+                        //     chunk_collider.center(),
+                        //     0.,
+                        //     chunk_collider.size() - 10.,
+                        //     Color::Srgba(BLUE),
+                        // );
 
                         if !circuit.turn.contains(&chunk_entity) {
                             let t = match (&collision, &circuit.current_orientation) {
@@ -170,20 +184,33 @@ fn update_circuit(
     }
 }
 
+/// When postman collide the end chunk
 fn check_end(
     mut player_query: Query<&Collider, With<Player>>,
     chunk_query: Query<&Collider, (With<EndChunk>, Without<Player>)>,
     circuit: Res<Circuit>,
-    mut state: ResMut<NextState<CircuitState>>,
+    mut next_state: ResMut<NextState<GameState>>,
+    current_state: Res<State<GameState>>,
 ) {
-    if circuit.already_collide.len() > 3 {
+    if circuit.already_collide.len() > 3 && *current_state.get() != GameState::End {
         if let Ok(player_collider) = player_query.get_single_mut() {
             if let Ok(chunk_collider) = chunk_query.get_single() {
                 if player_collider.collide(chunk_collider) {
                     // is end of circuit !
-                    state.set(CircuitState::End);
+                    println!("End");
+                    next_state.set(GameState::End);
                 }
             }
         }
+    }
+}
+
+fn tick_end_timer(time: Res<Time>, mut timer: ResMut<EndCircuitTimer>) {
+    timer.tick(time.delta());
+}
+
+fn check_end_timer(timer: Res<EndCircuitTimer>, mut state: ResMut<NextState<GameState>>) {
+    if timer.finished() {
+        state.set(GameState::EndScreen);
     }
 }

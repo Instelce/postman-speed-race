@@ -1,16 +1,22 @@
 use bevy::{ecs::query, prelude::*};
 use bevy_aseprite_ultra::prelude::{Animation, AnimationDirection, AnimationRepeat};
 
+use super::widgets::DisableButton;
+
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<InteractionPalette>();
     app.add_systems(
         Update,
-        (apply_interaction_palette, apply_interaction_sprite),
+        (
+            apply_interaction_palette,
+            apply_interaction_sprite,
+            style_disable_button,
+        ),
     );
 }
 
 pub type InteractionQuery<'w, 's, T> =
-    Query<'w, 's, (&'static Interaction, T), Changed<Interaction>>;
+    Query<'w, 's, (&'static Interaction, T), (Changed<Interaction>, Without<DisableButton>)>;
 
 #[derive(Component, Debug, Reflect)]
 #[reflect(Component)]
@@ -47,5 +53,21 @@ fn apply_interaction_sprite(mut query: InteractionQuery<&mut Animation>) {
                 animation.play("pressed", AnimationRepeat::Loop);
             }
         };
+    }
+}
+
+fn style_disable_button(
+    mut query: Query<
+        (Option<&mut BackgroundColor>, Option<&mut UiImage>),
+        (With<DisableButton>, With<Button>),
+    >,
+) {
+    for (background, image) in query.iter_mut() {
+        if let Some(mut background) = background {
+            background.0 = background.0.with_alpha(0.6);
+        }
+        if let Some(mut image) = image {
+            image.color.set_alpha(0.6);
+        }
     }
 }

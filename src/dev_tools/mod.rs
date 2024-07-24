@@ -1,7 +1,6 @@
 //! Development tools for the game. This plugin is only enabled in dev builds.
 
 use bevy_inspector_egui::DefaultInspectorConfigPlugin;
-pub use bevy_pancam::PanCam;
 
 use bevy::{
     dev_tools::{
@@ -16,7 +15,7 @@ use bevy::{
 use debug_camera::*;
 use inspector::inspector_ui;
 
-use crate::screen::Screen;
+use crate::{game::GameState, screen::Screen};
 
 mod debug_camera;
 mod inspector;
@@ -54,6 +53,7 @@ pub(super) fn plugin(app: &mut App) {
 
     // Print state transitions in dev builds
     app.add_systems(Update, log_transitions::<Screen>);
+    app.add_systems(Update, log_transitions::<GameState>);
 }
 
 #[derive(Resource, Reflect)]

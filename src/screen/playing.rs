@@ -3,7 +3,7 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use super::Screen;
 use crate::{
     game::{
-        circuit::Circuit,
+        circuit::{Circuit, EndCircuitTimer},
         house::HouseRotate,
         letter::Letters,
         spawn::{level::SpawnLevel, map::MapTag},
@@ -21,17 +21,9 @@ pub(super) fn plugin(app: &mut App) {
         return_to_title_screen
             .run_if(in_state(Screen::Playing).and_then(input_just_pressed(KeyCode::Escape))),
     );
-
-    // Restart
-    app.add_systems(
-        Update,
-        (exit_playing, clear_entities, enter_playing, spawn_ui)
-            .chain()
-            .run_if(in_state(Screen::Playing).and_then(input_just_pressed(KeyCode::KeyR))),
-    );
 }
 
-#[derive(Resource, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
+#[derive(Resource, Debug, Default, Clone, Copy, PartialEq, Eq, Reflect)]
 #[reflect(Resource)]
 pub struct CurrentLevel(pub i32);
 
@@ -52,6 +44,7 @@ fn enter_playing(
 
     commands.init_resource::<Circuit>();
     commands.init_resource::<HouseRotate>();
+    commands.init_resource::<EndCircuitTimer>();
 }
 
 fn exit_playing(
@@ -66,7 +59,7 @@ fn exit_playing(
     commands.remove_resource::<Circuit>();
     commands.remove_resource::<HouseRotate>();
     commands.remove_resource::<Letters>();
-    commands.remove_resource::<CurrentLevel>();
+    commands.remove_resource::<EndCircuitTimer>();
 }
 
 fn clear_entities(mut commands: Commands, query: Query<(Entity, &StateScoped<Screen>)>) {

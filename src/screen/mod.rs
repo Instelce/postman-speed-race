@@ -3,7 +3,7 @@ use bevy::prelude::*;
 mod credits;
 mod levels;
 mod loading;
-mod playing;
+pub mod playing;
 mod splash;
 mod title;
 
@@ -31,4 +31,5 @@ pub enum Screen {
     Credits,
     Playing,
     Levels,
+    Restart, // only for restart the game
 }

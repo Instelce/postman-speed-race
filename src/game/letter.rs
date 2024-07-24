@@ -38,6 +38,7 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Resource, Reflect, Debug, Default, PartialEq, Eq, Clone)]
 #[reflect(Resource)]
 pub struct Letters {
+    pub all: i32,
     pub to_post: i32,
     pub lost: i32,
 }
@@ -45,6 +46,7 @@ pub struct Letters {
 impl Letters {
     pub fn init(letters: i32) -> Self {
         Self {
+            all: letters,
             to_post: letters,
             lost: 0,
         }
@@ -111,7 +113,7 @@ pub fn update_letter_ui(
 }
 
 pub fn launch_zone_detection(
-    mut gizmos: Gizmos,
+    // mut gizmos: Gizmos,
     mut commands: Commands,
     mut player_query: Query<(&Collider, &mut PlayerController), With<Player>>,
     launch_zone_query: Query<(&Collider, &LetterLaunchZone), Without<Player>>,
@@ -120,8 +122,8 @@ pub fn launch_zone_detection(
         for (zone_collider, zone) in launch_zone_query.iter() {
             // Enter a launch zone
             if player_collider.collide(zone_collider) {
-                #[cfg(feature = "dev")]
-                gizmos.rect_2d(zone_collider.center(), 0., zone_collider.size() - 10., RED);
+                // #[cfg(feature = "dev")]
+                // gizmos.rect_2d(zone_collider.center(), 0., zone_collider.size() - 10., RED);
 
                 if !controller.can_launch_letter {
                     controller.can_launch_letter = true;

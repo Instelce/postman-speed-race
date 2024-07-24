@@ -66,7 +66,6 @@ fn handle_title_action(
         if matches!(interaction, Interaction::Pressed) {
             match action {
                 TitleAction::Play => {
-                    commands.insert_resource(CurrentLevel(0));
                     next_screen.set(Screen::Playing);
                 }
                 TitleAction::Credits => next_screen.set(Screen::Credits),

@@ -2,7 +2,7 @@ use bevy::{prelude::*, ui::Val::*};
 
 use crate::{
     game::{assets::handles::AsepriteAssets, save::GameSave},
-    ui::prelude::{Containers, InteractionQuery, RootAnchor, Widgets},
+    ui::prelude::{Containers, DisableButton, InteractionQuery, RootAnchor, Widgets},
 };
 
 use super::{playing::CurrentLevel, Screen};
@@ -42,13 +42,23 @@ fn enter_levels(mut commands: Commands, game_save: Res<GameSave>, aseprites: Res
                 })
                 .with_children(|children| {
                     for (i, level_data) in game_save.levels.iter().enumerate() {
-                        children
-                            .button_sprite(
-                                level_data.name.clone(),
-                                aseprites.get("button"),
-                                Some(Vec2::splat(250.)),
-                            )
-                            .insert(LevelsAction::Play(i as i32));
+                        if i as i32 > game_save.last_level_passed {
+                            children
+                                .button_sprite(
+                                    level_data.name.clone(),
+                                    aseprites.get("button"),
+                                    Some(Vec2::splat(250.)),
+                                )
+                                .insert((LevelsAction::Play(i as i32), DisableButton));
+                        } else {
+                            children
+                                .button_sprite(
+                                    level_data.name.clone(),
+                                    aseprites.get("button"),
+                                    Some(Vec2::splat(250.)),
+                                )
+                                .insert(LevelsAction::Play(i as i32));
+                        }
                     }
                 });
 
@@ -63,12 +73,13 @@ fn handle_levels_action(
     mut commands: Commands,
     mut next_screen: ResMut<NextState<Screen>>,
     button_query: InteractionQuery<&LevelsAction>,
+    mut current_level: ResMut<CurrentLevel>,
 ) {
     for (interaction, action) in button_query.iter() {
         if matches!(interaction, Interaction::Pressed) {
             match action {
                 LevelsAction::Play(i) => {
-                    commands.insert_resource(CurrentLevel(*i));
+                    current_level.0 = *i;
                     next_screen.set(Screen::Playing);
                 }
                 LevelsAction::Back => next_screen.set(Screen::Title),

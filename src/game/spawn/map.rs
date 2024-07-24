@@ -143,7 +143,7 @@ fn spawn_map(
         let chunk_entity = commands
             .spawn((
                 SpatialBundle {
-                    transform: Transform::from_translation(translation.extend(-0.01))
+                    transform: Transform::from_translation(translation.extend(-0.02))
                         .with_rotation(rotation),
                     ..default()
                 },
@@ -169,7 +169,7 @@ fn spawn_map(
                                 transform: Transform::from_translation(Vec3::new(
                                     x as f32 * 16.,
                                     y as f32 * -16.,
-                                    -0.01,
+                                    0.,
                                 )),
                                 ..default()
                             },
@@ -216,6 +216,45 @@ fn spawn_map(
             }
             ChunkType::PostOffice => {
                 commands.entity(chunk_entity).insert(PostOffice);
+
+                // Spawn a lot of letters
+                commands
+                    .spawn((
+                        Name::new("Post Office Letters"),
+                        SpatialBundle {
+                            transform: Transform::from_translation(chunk.position.extend(0.02)),
+                            ..default()
+                        },
+                        StateScoped(Screen::Playing),
+                    ))
+                    .with_children(|children| {
+                        let mut rng = rand::thread_rng();
+                        for _ in 0..100 {
+                            let translation = Vec2::new(
+                                rng.gen_range(0..PIXEL_CHUNK_SIZE as u32) as f32,
+                                -(rng.gen_range(0..PIXEL_CHUNK_SIZE as u32) as f32) + 16.,
+                            );
+                            let angle = rng.gen_range(1..6) as f32 - 0.25;
+                            let scale = Vec2::splat(rng.gen_range(6..10) as f32 / 10.);
+
+                            let tag = if rng.gen_ratio(2, 10) {
+                                "craft"
+                            } else {
+                                "small"
+                            };
+
+                            children.spawn(
+                                (AsepriteAnimationBundle {
+                                    aseprite: aseprites.get("letter"),
+                                    animation: Animation::default().with_tag(tag),
+                                    transform: Transform::from_translation(translation.extend(0.))
+                                        .with_rotation(Quat::from_axis_angle(Vec3::Z, angle))
+                                        .with_scale(scale.extend(0.)),
+                                    ..default()
+                                }),
+                            );
+                        }
+                    });
             }
             ChunkType::House => {
                 // House spawn

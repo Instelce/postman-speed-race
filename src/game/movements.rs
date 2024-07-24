@@ -5,12 +5,13 @@ use bevy::{math::VectorSpace, prelude::*};
 use crate::{screen::Screen, AppSet};
 
 use super::{
-    circuit::{Circuit, CircuitDirection, CircuitState},
+    circuit::{Circuit, CircuitDirection, EndCircuitTimer},
     collider::Collider,
     spawn::{
         map::{ChunkTag, NotRoadTile},
         player::{Player, PlayerController, PlayerMovement},
     },
+    GameState,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -25,7 +26,7 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_systems(
         Update,
-        (clear_movement_end.run_if(in_state(CircuitState::End))),
+        (clear_movement_end.run_if(in_state(GameState::End))),
     );
 }
 
@@ -35,6 +36,7 @@ pub struct Velocity(pub Vec2);
 
 pub fn player_movements(
     time: Res<Time>,
+    end_timer: Res<EndCircuitTimer>,
     keys: Res<ButtonInput<KeyCode>>,
     mut query: Query<
         (
@@ -47,15 +49,14 @@ pub fn player_movements(
     >,
     mut circuit: ResMut<Circuit>,
 ) {
-    if let Ok((mut transform, mut velocity, mut movement, mut controller)) = query.get_single_mut()
-    {
-        if controller.end_timer.finished() {
+    if let Ok((mut transform, mut velocity, mut movement, _)) = query.get_single_mut() {
+        if end_timer.elapsed_secs() > 1. {
             return;
         }
 
         let mut rotation_factor = 0.;
 
-        if !(controller.end_timer.elapsed_secs() > 0.) {
+        if !(end_timer.elapsed_secs() > 0.) {
             // vertical axis
             if keys.pressed(KeyCode::KeyW) {
                 movement.factor = 1.;
@@ -236,13 +237,11 @@ fn off_the_road(
 }
 
 fn clear_movement_end(
-    time: Res<Time>,
+    end_timer: Res<EndCircuitTimer>,
     mut player_query: Query<(&mut Transform, &mut Velocity, &mut PlayerController), With<Player>>,
 ) {
-    if let Ok((mut transform, mut velocity, mut controller)) = player_query.get_single_mut() {
-        controller.end_timer.tick(time.delta());
-
-        if controller.end_timer.finished() {
+    if let Ok((mut transform, mut velocity, _)) = player_query.get_single_mut() {
+        if end_timer.elapsed_secs() > 1. {
             velocity.0 = Vec2::splat(0.);
         }
 

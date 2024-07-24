@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_aseprite_ultra::prelude::Aseprite;
 use bevy_hanabi::EffectAsset;
 
+use super::playing::CurrentLevel;
 use super::Screen;
 
 use crate::game::assets::handles::{
@@ -26,6 +27,7 @@ fn enter_loading(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     // Initialise game save
     commands.insert_resource(GameSave::load());
+    commands.insert_resource(CurrentLevel::default());
 
     // Preload assets so the game runs smoothly.
     commands.insert_resource(AsepriteAssets::new(&asset_server));
