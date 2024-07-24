@@ -32,7 +32,7 @@ pub struct Player;
 #[reflect(Component)]
 pub struct PlayerParticles;
 
-#[derive(Component, Debug, Reflect, Default)]
+#[derive(Component, Debug, Reflect)]
 #[reflect(Component)]
 pub struct PlayerController {
     pub can_launch_letter: bool,
@@ -40,7 +40,22 @@ pub struct PlayerController {
     pub closest_launch_zone: Option<Collider>,
     pub letter_launched: bool,
     pub actual_collision: Option<Collider>,
-    pub is_offroad: bool,
+    pub actual_chunk: Option<Collider>,
+    pub end_timer: Timer,
+}
+
+impl Default for PlayerController {
+    fn default() -> Self {
+        Self {
+            can_launch_letter: false,
+            letter_target: None,
+            closest_launch_zone: None,
+            letter_launched: false,
+            actual_collision: None,
+            actual_chunk: None,
+            end_timer: Timer::from_seconds(1., TimerMode::Once),
+        }
+    }
 }
 
 #[derive(Component, Reflect)]
@@ -62,7 +77,7 @@ impl Default for PlayerMovement {
             factor: 0.,
             acceleration: 8. * MULT,
             max_speed: 1. * MULT,
-            friction: 1. * MULT,
+            friction: 2.,
             // friction: 2.25 * MULT,
             dash_mul: 2.,
         }

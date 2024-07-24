@@ -54,11 +54,22 @@ pub enum ChunkRoad {
     #[default]
     Vertical,
     Turn,
+
+    // TODO
+    Intersection,
 }
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
-pub struct NotRoad;
+pub struct NotRoadTile;
+
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
+pub struct PostOffice;
+
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
+pub struct EndChunk;
 
 #[derive(Component, Default, Deref, DerefMut, Debug)]
 pub struct ChunkConnextions(pub Vec<ChunkConnextion>);
@@ -169,19 +180,27 @@ fn spawn_map(
                         ));
 
                         if *intgrid == IntgridType::Empty {
-                            a.insert((NotRoad, Collider::rect(8., 8.)));
+                            a.insert((NotRoadTile, Collider::rect(8., 8.)));
                         }
                     }
                 }
             })
             .id();
 
+        if chunk.is_end {
+            commands.entity(chunk_entity).insert(EndChunk);
+        }
+
         match &chunk.chunk_type {
             ChunkType::Road(road_type) => {
                 // get chunk orientation
                 let orientation = match road_type {
                     RoadChunkType::Horizontal => ChunkRoad::Horizontal,
+                    RoadChunkType::HorizontalJUp => ChunkRoad::Horizontal,
+                    RoadChunkType::HorizontalJDown => ChunkRoad::Horizontal,
                     RoadChunkType::Vertical => ChunkRoad::Vertical,
+                    RoadChunkType::VerticalJLeft => ChunkRoad::Vertical,
+                    RoadChunkType::VerticalJRight => ChunkRoad::Vertical,
                     RoadChunkType::Turn => ChunkRoad::Turn,
                 };
 
@@ -194,6 +213,9 @@ fn spawn_map(
                             + Vec2::new(-8., 8.),
                     ),
                 ));
+            }
+            ChunkType::PostOffice => {
+                commands.entity(chunk_entity).insert(PostOffice);
             }
             ChunkType::House => {
                 // House spawn

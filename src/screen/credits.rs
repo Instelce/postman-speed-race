@@ -59,7 +59,7 @@ fn enter_credits(mut commands: Commands, aseprite_handles: Res<AsepriteAssets>) 
                 .margin(UiRect::top(Val::Px(20.)))
                 .with_children(|children| {
                     children
-                        .button_sprite("Back", aseprite_handles.get("button"))
+                        .button_sprite("Back", aseprite_handles.get("button"), None)
                         .insert(CreditsAction::Back);
                 });
         });

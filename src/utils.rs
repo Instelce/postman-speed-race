@@ -92,3 +92,7 @@ pub fn read_lines(filename: &str) -> Vec<String> {
         .map(String::from)
         .collect()
 }
+
+pub fn path_exist(path: &str) -> bool {
+    Path::new(path).exists()
+}

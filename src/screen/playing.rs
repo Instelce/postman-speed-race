@@ -31,12 +31,17 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
+#[derive(Resource, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
+#[reflect(Resource)]
+pub struct CurrentLevel(pub i32);
+
 fn enter_playing(
     mut commands: Commands,
     mut clear_color: ResMut<ClearColor>,
     mut camera_query: Query<&mut OrthographicProjection, With<Camera>>,
+    current_level: Res<CurrentLevel>,
 ) {
-    commands.trigger(SpawnLevel);
+    commands.trigger(SpawnLevel(current_level.0));
 
     // set background
     clear_color.0 = BACKGROUND;
@@ -61,6 +66,7 @@ fn exit_playing(
     commands.remove_resource::<Circuit>();
     commands.remove_resource::<HouseRotate>();
     commands.remove_resource::<Letters>();
+    commands.remove_resource::<CurrentLevel>();
 }
 
 fn clear_entities(mut commands: Commands, query: Query<(Entity, &StateScoped<Screen>)>) {

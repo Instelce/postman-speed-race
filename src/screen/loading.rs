@@ -8,6 +8,7 @@ use crate::game::assets::handles::{
     AsepriteAssets, Handles, HouseAssets, ParticleEffectAssets, SfxAssets, SoundtrackAssets,
     TilesetAssets,
 };
+use crate::game::save::GameSave;
 use crate::ui::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
@@ -22,6 +23,9 @@ fn enter_loading(mut commands: Commands, asset_server: Res<AssetServer>) {
         .with_children(|children| {
             children.label("Loading...");
         });
+
+    // Initialise game save
+    commands.insert_resource(GameSave::load());
 
     // Preload assets so the game runs smoothly.
     commands.insert_resource(AsepriteAssets::new(&asset_server));
@@ -54,10 +58,10 @@ fn check_all_loaded(
         && sfx_handles.all_loaded(&audio_assets)
         && soundtrack_handles.all_loaded(&audio_assets);
     if all_loaded {
-        #[cfg(not(feature = "dev"))]
+        // #[cfg(not(feature = "dev"))]
         next_screen.set(Screen::Title);
 
-        #[cfg(feature = "dev")]
-        next_screen.set(Screen::Playing);
+        // #[cfg(feature = "dev")]
+        // next_screen.set(Screen::Playing);
     }
 }

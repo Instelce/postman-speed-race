@@ -10,11 +10,13 @@ pub mod house;
 pub mod letter;
 mod map;
 pub mod movements;
+pub mod save;
 pub mod spawn;
 pub mod ui;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
+        save::plugin,
         assets::loaders::plugin,
         spawn::plugin,
         ui::plugin,

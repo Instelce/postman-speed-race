@@ -16,6 +16,7 @@ pub struct Chunk {
     pub chunk_type: ChunkType,
     pub connextions: Vec<ChunkConnextion>,
     pub house: Option<House>,
+    pub is_end: bool,
     pub flip_x: bool,
     pub flip_y: bool,
 }
@@ -55,7 +56,11 @@ impl From<&str> for ChunkType {
     fn from(value: &str) -> Self {
         match value {
             "Vertical" => ChunkType::Road(RoadChunkType::Vertical),
+            "VerticalJLeft" => ChunkType::Road(RoadChunkType::VerticalJLeft),
+            "VerticalJRight" => ChunkType::Road(RoadChunkType::VerticalJRight),
             "Horizontal" => ChunkType::Road(RoadChunkType::Horizontal),
+            "HorizontalJUp" => ChunkType::Road(RoadChunkType::HorizontalJUp),
+            "HorizontalJDown" => ChunkType::Road(RoadChunkType::HorizontalJDown),
             "Turn" => ChunkType::Road(RoadChunkType::Turn),
             "House" => ChunkType::House,
             "PostOffice" => ChunkType::PostOffice,
@@ -73,6 +78,10 @@ impl From<&i64> for ChunkType {
             2 => ChunkType::Road(RoadChunkType::Turn),
             6 => ChunkType::Road(RoadChunkType::Turn),
             7 => ChunkType::Road(RoadChunkType::Turn),
+            8 => ChunkType::Road(RoadChunkType::VerticalJLeft),
+            9 => ChunkType::Road(RoadChunkType::HorizontalJUp),
+            13 => ChunkType::Road(RoadChunkType::VerticalJRight),
+            14 => ChunkType::Road(RoadChunkType::HorizontalJDown),
             15 => ChunkType::PostOffice,
             16 => ChunkType::House,
             _ => ChunkType::House,
@@ -83,7 +92,11 @@ impl From<&i64> for ChunkType {
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum RoadChunkType {
     Horizontal,
+    HorizontalJUp,
+    HorizontalJDown,
     Vertical,
+    VerticalJLeft,
+    VerticalJRight,
     Turn,
 }
 

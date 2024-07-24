@@ -7,20 +7,29 @@ use crate::{screen::Screen, AppSet};
 use super::{
     collider::{collide, Collider, Collision},
     map::chunk::ChunkConnextion,
+    movements::Velocity,
     spawn::{
-        map::{ChunkConnextions, ChunkRoad, ChunkTag},
+        map::{ChunkConnextions, ChunkRoad, ChunkTag, EndChunk},
         player::Player,
     },
 };
 
 pub(super) fn plugin(app: &mut App) {
+    app.init_state::<CircuitState>();
     app.register_type::<Circuit>();
     app.add_systems(
         Update,
-        update_circuit
+        (update_circuit, check_end)
             .in_set(AppSet::Update)
             .run_if(in_state(Screen::Playing)),
     );
+}
+
+#[derive(States, Debug, Hash, PartialEq, Eq, Clone, Default)]
+pub enum CircuitState {
+    #[default]
+    Run,
+    End,
 }
 
 #[derive(Resource, Reflect, Debug, Default)]
@@ -155,6 +164,24 @@ fn update_circuit(
                             circuit.already_collide.push(chunk_entity);
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+fn check_end(
+    mut player_query: Query<&Collider, With<Player>>,
+    chunk_query: Query<&Collider, (With<EndChunk>, Without<Player>)>,
+    circuit: Res<Circuit>,
+    mut state: ResMut<NextState<CircuitState>>,
+) {
+    if circuit.already_collide.len() > 3 {
+        if let Ok(player_collider) = player_query.get_single_mut() {
+            if let Ok(chunk_collider) = chunk_query.get_single() {
+                if player_collider.collide(chunk_collider) {
+                    // is end of circuit !
+                    state.set(CircuitState::End);
                 }
             }
         }

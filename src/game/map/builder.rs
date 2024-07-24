@@ -86,6 +86,8 @@ impl MapBuilder {
         let map = self.maps.levels.get(*level_indice as usize).unwrap();
         let base = map.get_layer("Base").int_grid_csv.clone();
 
+        println!("Map size: {}x{}", map.tile_x(), map.tile_y());
+
         // Tiles
         let tiles = generate_level(
             inline_csv_to_matrix(base.clone(), map.tile_y(), map.tile_x()),
@@ -125,9 +127,14 @@ impl MapBuilder {
                     // set start position
                     if chunk_type == ChunkType::PostOffice {
                         self.map.start_position = Vec2::new(
-                            chunk.position.x + PIXEL_CHUNK_SIZE + PIXEL_CHUNK_SIZE / 2. - 8.,
+                            chunk.position.x + PIXEL_CHUNK_SIZE - 8.,
                             chunk.position.y - PIXEL_CHUNK_SIZE / 2. + 8.,
                         )
+                    }
+
+                    // set end chunk
+                    if tiles[y][x - 1].value == 15 {
+                        chunk.is_end = true;
                     }
 
                     if chunk_tile.value == 2 {

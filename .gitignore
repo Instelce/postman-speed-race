@@ -2,3 +2,5 @@
 /target
 # Trunk builds
 /web/dist/
+
+/assets/data/save.ron

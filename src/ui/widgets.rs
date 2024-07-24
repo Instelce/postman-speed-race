@@ -108,6 +108,7 @@ pub trait Widgets {
         &mut self,
         text: impl Into<String>,
         aseprite: Handle<Aseprite>,
+        size: Option<Vec2>,
     ) -> EntityCommands;
 
     fn label(&mut self, text: impl Into<String>) -> EntityCommands;
@@ -181,13 +182,20 @@ impl<T: Spawn> Widgets for T {
         &mut self,
         text: impl Into<String>,
         aseprite: Handle<Aseprite>,
+        size: Option<Vec2>,
     ) -> EntityCommands {
+        let (width, height) = if let Some(size) = size {
+            (Px(size.x), Px(size.y))
+        } else {
+            (Px(200.), Px(65.))
+        };
+
         let mut entity = self.spawn((
             Name::new("Button"),
             ButtonBundle {
                 style: Style {
-                    width: Px(200.),
-                    height: Px(65.),
+                    width,
+                    height,
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
                     ..default()
@@ -211,7 +219,8 @@ impl<T: Spawn> Widgets for T {
                         color: BUTTON_TEXT,
                         ..default()
                     },
-                ),
+                )
+                .with_text_justify(JustifyText::Center),
             ));
         });
 

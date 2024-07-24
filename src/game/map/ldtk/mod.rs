@@ -11,6 +11,10 @@ impl Project {
         project
     }
 
+    pub fn count_level(&self) -> i32 {
+        self.levels.iter().count() as i32
+    }
+
     pub fn all_intgrid_values(&self) -> Vec<&IntGridValueDefinition> {
         let mut values: Vec<&IntGridValueDefinition> = Vec::new();
         for layer in self.defs.layers.iter() {

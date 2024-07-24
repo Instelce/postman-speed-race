@@ -5,17 +5,17 @@
             "label": "Run native dev",
             "type": "cargo",
             "command": "run",
-            "options": {
-                "env": {
-                    "RUST_BACKTRACE": "full"
-                }
-            },
+            // "options": {
+            //     "env": {
+            //         "RUST_BACKTRACE": "full"
+            //     }
+            // },
             "presentation": {
                 "clear": true
             },
-            "problemMatcher": [
-                "$rustc"
-            ],
+            // "problemMatcher": [
+            //     "$rustc"
+            // ],
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -25,25 +25,18 @@
             "label": "Run native release",
             "type": "cargo",
             "command": "run",
-            "args": [
-                "--release",
-                "--no-default-features"
-            ],
+            "args": ["--release", "--no-default-features"],
             "presentation": {
                 "clear": true
             },
-            "problemMatcher": [
-                "$rustc"
-            ],
+            "problemMatcher": ["$rustc"],
             "group": "build"
         },
         {
             "label": "Run web dev",
             "type": "process",
             "command": "trunk",
-            "args": [
-                "serve"
-            ],
+            "args": ["serve"],
             "options": {
                 "env": {
                     "RUST_BACKTRACE": "full"
@@ -52,26 +45,18 @@
             "presentation": {
                 "clear": true
             },
-            "problemMatcher": [
-                "$rustc"
-            ],
+            "problemMatcher": ["$rustc"],
             "group": "build"
         },
         {
             "label": "Run web release",
             "type": "process",
             "command": "trunk",
-            "args": [
-                "serve",
-                "--release",
-                "--no-default-features"
-            ],
+            "args": ["serve", "--release", "--no-default-features"],
             "presentation": {
                 "clear": true
             },
-            "problemMatcher": [
-                "$rustc"
-            ],
+            "problemMatcher": ["$rustc"],
             "group": "build"
         }
     ]

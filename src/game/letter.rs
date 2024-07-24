@@ -204,7 +204,6 @@ pub fn move_letter(
     mut letter_query: Query<&mut Transform, With<Letter>>,
     target_query: Query<&GlobalTransform, (With<LetterTarget>, Without<Letter>)>,
 ) {
-    println!("{}", target_query.iter().count());
     if let Ok(mut letter_transfrom) = letter_query.get_single_mut() {
         if let Ok(target_transfrom) = target_query.get_single() {
             letter_transfrom.translation = letter_transfrom

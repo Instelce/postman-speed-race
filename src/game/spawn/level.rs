@@ -7,8 +7,10 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 #[derive(Event, Debug)]
-pub struct SpawnLevel;
+pub struct SpawnLevel(pub i32);
 
-fn spawn_level(_trigger: Trigger<SpawnLevel>, mut commands: Commands) {
-    commands.trigger(SpawnMap { level: 0 })
+fn spawn_level(trigger: Trigger<SpawnLevel>, mut commands: Commands) {
+    commands.trigger(SpawnMap {
+        level: trigger.event().0,
+    })
 }
