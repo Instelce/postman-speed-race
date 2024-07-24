@@ -6,7 +6,11 @@ use crate::{screen::Screen, AppSet};
 
 use super::{
     circuit::{Circuit, CircuitDirection},
-    spawn::player::{Player, PlayerController, PlayerMovement},
+    collider::Collider,
+    spawn::{
+        map::{ChunkTag, NotRoad},
+        player::{Player, PlayerController, PlayerMovement},
+    },
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -14,7 +18,7 @@ pub(super) fn plugin(app: &mut App) {
         FixedUpdate,
         (
             player_movements.in_set(AppSet::RecordInput),
-            update_entities_transform.in_set(AppSet::Update),
+            (update_entities_transform, off_the_road).in_set(AppSet::Update),
         )
             .run_if(in_state(Screen::Playing)),
     );
@@ -52,7 +56,7 @@ pub fn player_movements(
         // brake
         if keys.pressed(KeyCode::KeyS) {
             movement.friction = 12.;
-        } else {
+        } else if movement.friction == 12. {
             movement.friction = 2.;
         }
 
@@ -175,5 +179,44 @@ fn update_entities_transform(mut query: Query<(&mut Transform, &mut Velocity)>) 
         transform.translation += Vec3::new(0., delta_y, 0.);
 
         // check collision on the y axis
+    }
+}
+
+fn off_the_road(
+    mut player_query: Query<(&mut PlayerMovement, &mut PlayerController, &Collider), With<Player>>,
+    chunk_query: Query<(&Children, &Collider), With<ChunkTag>>,
+    tile_query: Query<(&Parent, &Collider), With<NotRoad>>,
+) {
+    if let Ok((mut movement, mut controller, player_collider)) = player_query.get_single_mut() {
+        for (children, chunk_collider) in chunk_query.iter() {
+            if player_collider.collide(chunk_collider) {
+                controller.is_offroad = false;
+
+                for child in children.iter() {
+                    if let Ok((parent, tile_collider)) = tile_query.get(*child) {
+                        if player_collider.collide(tile_collider) {
+                            controller.actual_collision = Some(tile_collider.clone());
+                        }
+                    }
+                }
+
+                break;
+            } else {
+                controller.is_offroad = true;
+            }
+        }
+
+        if let Some(collider) = &controller.actual_collision {
+            movement.friction = 20.;
+
+            if !player_collider.collide(collider) {
+                movement.friction = 2.;
+                controller.actual_collision = None;
+            }
+        }
+
+        if controller.is_offroad {
+            movement.friction = 20.;
+        }
     }
 }

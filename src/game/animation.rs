@@ -6,7 +6,7 @@ use crate::screen::Screen;
 
 use super::{
     movements::Velocity,
-    spawn::player::{Player, PlayerMovement, PlayerParticles},
+    spawn::player::{Player, PlayerController, PlayerMovement, PlayerParticles},
 };
 
 /// Animations and particles
@@ -15,32 +15,42 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 fn animate_player(
-    mut query: Query<(&Transform, &mut Animation, &PlayerMovement, &Velocity), With<Player>>,
+    mut query: Query<
+        (
+            &Transform,
+            &mut Animation,
+            &PlayerMovement,
+            &PlayerController,
+            &Velocity,
+        ),
+        With<Player>,
+    >,
     mut particles_query: Query<(&mut EffectSpawner, &mut EffectProperties), With<PlayerParticles>>,
 ) {
     if query.is_empty() || particles_query.is_empty() {
         return;
     }
 
-    let (transform, mut animation, movement, velocity) = query.single_mut();
+    let (transform, mut animation, movement, controller, velocity) = query.single_mut();
     let (mut spawner, mut properties) = particles_query.single_mut();
 
-    if velocity.0.length() < 0.2 && velocity.0.length() > -0.2 {
-        animation.play("pause", AnimationRepeat::Loop);
-    }
+    if animation.tag != Some("launch-letter".into()) {
+        if velocity.0.length() < 0.2 && velocity.0.length() > -0.2 {
+            animation.play("pause", AnimationRepeat::Loop);
+        } else if movement.friction >= 12. {
+            animation.play("brake", AnimationRepeat::Loop);
+        }
 
-    if velocity.0.length() > 0.4 {
-        properties.set("velocity", (movement.direction.extend(0.) * -10.).into());
-        spawner.reset();
-    }
+        // particles
+        if velocity.0.length() > 0.4 {
+            properties.set("velocity", (movement.direction.extend(0.) * -4.).into());
+            spawner.reset();
+        }
 
-    if velocity.0.length() > 2. {
-        animation.play("ride-fast", AnimationRepeat::Loop);
-    } else if velocity.0.length() > 0.2 {
-        animation.play("ride", AnimationRepeat::Loop);
-    }
-
-    if movement.friction >= 12. {
-        animation.play("brake", AnimationRepeat::Loop);
+        if velocity.0.length() > 2. {
+            animation.play("ride-fast", AnimationRepeat::Loop);
+        } else if velocity.0.length() > 0.2 {
+            animation.play("ride", AnimationRepeat::Loop);
+        }
     }
 }

@@ -7,6 +7,7 @@ use crate::{
         house::HouseRotate,
         letter::Letters,
         spawn::{level::SpawnLevel, map::MapTag},
+        ui::spawn_ui,
     },
     ui::palette::BACKGROUND,
 };
@@ -19,6 +20,14 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         return_to_title_screen
             .run_if(in_state(Screen::Playing).and_then(input_just_pressed(KeyCode::Escape))),
+    );
+
+    // Restart
+    app.add_systems(
+        Update,
+        (exit_playing, clear_entities, enter_playing, spawn_ui)
+            .chain()
+            .run_if(in_state(Screen::Playing).and_then(input_just_pressed(KeyCode::KeyR))),
     );
 }
 
@@ -52,6 +61,14 @@ fn exit_playing(
     commands.remove_resource::<Circuit>();
     commands.remove_resource::<HouseRotate>();
     commands.remove_resource::<Letters>();
+}
+
+fn clear_entities(mut commands: Commands, query: Query<(Entity, &StateScoped<Screen>)>) {
+    for (entity, scope) in query.iter() {
+        if scope.0 == Screen::Playing {
+            commands.entity(entity).despawn_recursive();
+        }
+    }
 }
 
 fn return_to_title_screen(mut next_screen: ResMut<NextState<Screen>>) {

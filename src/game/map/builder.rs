@@ -120,7 +120,6 @@ impl MapBuilder {
                         connexions.push(ChunkConnextion::Left);
                     }
 
-                    println!("{:?}, {:?}", chunk_type, connexions);
                     chunk.connextions = connexions;
 
                     // set start position

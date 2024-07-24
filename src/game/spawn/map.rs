@@ -20,6 +20,7 @@ use crate::{
             builder::MapBuilder,
             chunk::{ChunkConnextion, ChunkType, RoadChunkType, CHUNK_SIZE, PIXEL_CHUNK_SIZE},
             ldtk::Project,
+            types::IntgridType,
         },
     },
     screen::Screen,
@@ -54,6 +55,10 @@ pub enum ChunkRoad {
     Vertical,
     Turn,
 }
+
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
+pub struct NotRoad;
 
 #[derive(Component, Default, Deref, DerefMut, Debug)]
 pub struct ChunkConnextions(pub Vec<ChunkConnextion>);
@@ -141,7 +146,7 @@ fn spawn_map(
                         let intgrid = chunk.intgrid_at(x, y).unwrap();
                         let tile = chunk.tile_at(x, y).unwrap();
 
-                        children.spawn((
+                        let mut a = children.spawn((
                             Name::new("Tile"),
                             SpriteBundle {
                                 sprite: Sprite {
@@ -162,6 +167,10 @@ fn spawn_map(
                                 index: tile.value as usize,
                             },
                         ));
+
+                        if *intgrid == IntgridType::Empty {
+                            a.insert((NotRoad, Collider::rect(8., 8.)));
+                        }
                     }
                 }
             })

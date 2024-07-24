@@ -39,6 +39,8 @@ pub struct PlayerController {
     pub letter_target: Option<Entity>,
     pub closest_launch_zone: Option<Collider>,
     pub letter_launched: bool,
+    pub actual_collision: Option<Collider>,
+    pub is_offroad: bool,
 }
 
 #[derive(Component, Reflect)]

@@ -113,9 +113,6 @@ pub fn generate_level(
     let map_width = matrix.get(0).unwrap().len() as u32;
     let map = Matrix::new(matrix.clone());
 
-    println!("Map to transform {}w, {},h", map.width(), map.height());
-    println!("{map_height}, {map_width}");
-
     let mut layers: Vec<MatrixType<Tile>> = Vec::new();
 
     for (id, layer) in project.defs.layers.iter().enumerate() {
@@ -128,7 +125,6 @@ pub fn generate_level(
         match layer.purple_type {
             // generation of IntGrid layers
             Type::IntGrid => {
-                println!("--- {}", layer.identifier);
                 let mut gen_map: MatrixType<Tile> = Vec::new();
 
                 for (y, row) in map.iter().enumerate() {
@@ -299,13 +295,8 @@ pub fn generate_level(
     } else {
         // reverse layers because LDtk layers order is reversed
         for matrix in layers.iter().rev() {
-            println!("{}h, {}w", matrix.len(), matrix.get(0).unwrap().len());
             for y in 0..map_height {
                 for x in 0..map_width {
-                    print!(
-                        "{}, ",
-                        matrix.get(y as usize).unwrap().get(x as usize).unwrap()
-                    );
                     let tile = &matrix[y as usize][x as usize];
                     if tile.value != 0 {
                         final_map.0[y as usize][x as usize] = tile.clone();

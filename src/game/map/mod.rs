@@ -3,5 +3,5 @@ pub mod builder;
 pub mod chunk;
 pub mod ldtk;
 mod transformer;
-mod types;
+pub mod types;
 mod utils;

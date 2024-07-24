@@ -1,7 +1,7 @@
 (
     capacities: [1000],
     spawner: Once((
-        count: 10.,
+        count: 40.,
         spawn_immediately: false
     )),
     properties: {
@@ -12,7 +12,8 @@
     init: (
         position: Attribute(Property("position")),
         velocity: Attribute(Property("velocity")),
-        lifetime: Rand(0.05, 0.1),
+        lifetime: Literal(0.05),
+        // lifetime: Rand(0.05, 0.1),
     ),
 
     update: (

@@ -9,7 +9,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Playing), spawn_ui);
 }
 
-fn spawn_ui(mut commands: Commands) {
+pub fn spawn_ui(mut commands: Commands) {
     commands.spawn((
         Name::new("Letter UI Root"),
         NodeBundle {

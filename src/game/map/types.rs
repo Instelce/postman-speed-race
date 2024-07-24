@@ -8,6 +8,8 @@ pub type MatrixType<T> = Vec<Vec<T>>;
 pub enum IntgridType {
     Road,
     Dirt,
+    Fence,
+    Empty,
 }
 
 impl IntgridType {
@@ -15,6 +17,8 @@ impl IntgridType {
         match self {
             Self::Road => 1,
             Self::Dirt => 2,
+            Self::Fence => 3,
+            Self::Empty => 0,
         }
     }
 }
@@ -24,7 +28,9 @@ impl From<&i64> for IntgridType {
         match value {
             1 => Self::Road,
             2 => Self::Dirt,
-            _ => Self::Dirt,
+            3 => Self::Fence,
+            0 => Self::Empty,
+            _ => Self::Empty,
         }
     }
 }
