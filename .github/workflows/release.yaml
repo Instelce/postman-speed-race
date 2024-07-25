@@ -106,11 +106,11 @@ jobs:
           targets: ${{ matrix.targets }}
 
       - name: Populate target directory from cache
-        uses: Leafwing-Studios/cargo-cache@v1
+        uses: Leafwing-Studios/cargo-cache@v2
 
       - name: Install dependencies (Linux)
         if: ${{ matrix.platform == 'linux' }}
-        run: sudo apt-get update; sudo apt-get install libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
 
       - name: Prepare output directories
         run: rm -rf tmp; mkdir -p tmp/binary '${{ env.OUT_DIR }}'
@@ -145,10 +145,6 @@ jobs:
       - name: Add assets to package (non-Web)
         if: ${{ matrix.platform != 'web' }}
         run: cp -r '${{ env.ASSETS_DIR }}' '${{ env.OUT_DIR }}' || true # Ignore error if assets folder does not exist
-
-      - name: Add credits to package (non-Web)
-        if: ${{ matrix.platform != 'web' }}
-        run: cp -r 'credits' '${{ env.OUT_DIR }}' || true # Ignore error if credits folder does not exist
 
       - name: Add app metadata to package (MacOS)
         if: ${{ matrix.platform == 'macos' }}
