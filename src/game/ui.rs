@@ -1,3 +1,4 @@
+use bevy::color::palettes::css::{BLACK, WHITE};
 use bevy::{prelude::*, ui::Val::*};
 use bevy_aseprite_ultra::prelude::{Animation, AsepriteAnimationUiBundle, AsepriteSliceUiBundle};
 use ui_palette::BACKGROUND;
@@ -18,9 +19,12 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_systems(
         Update,
-        (handle_end_action)
-            .run_if(in_state(Screen::Playing))
-            .run_if(in_state(GameState::EndScreen)),
+        (handle_end_action.run_if(in_state(GameState::EndScreen)),)
+            .run_if(in_state(Screen::Playing)),
+    );
+    app.add_systems(
+        FixedUpdate,
+        (update_info_text,).run_if(in_state(Screen::Playing)),
     );
 }
 
@@ -31,6 +35,33 @@ enum EndAction {
     Next,
     Menu,
 }
+
+#[derive(Resource, Debug, Default, PartialEq, Eq, Reflect)]
+#[reflect(Resource)]
+pub struct InfoText {
+    pub text: String,
+    has_changed: bool,
+}
+
+impl InfoText {
+    pub fn set(&mut self, text: impl Into<String>) {
+        self.text = text.into();
+        self.has_changed = true;
+    }
+
+    pub fn reset(&mut self) {
+        self.text = "".into();
+        self.has_changed = true;
+    }
+}
+
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
+#[reflect(Component)]
+pub struct InfoTextTag;
+
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
+#[reflect(Component)]
+pub struct InfoTextContainer;
 
 pub fn spawn_ui(mut commands: Commands) {
     commands.spawn((
@@ -52,6 +83,38 @@ pub fn spawn_ui(mut commands: Commands) {
         StateScoped(Screen::Playing),
         LetterUi::default(),
     ));
+
+    // Info text
+    commands
+        .ui_root(RootAnchor::BottomCenter)
+        .with_children(|children| {
+            children
+                .spawn((
+                    NodeBundle {
+                        style: Style {
+                            padding: UiRect::px(10., 10., 10., 15.),
+                            ..default()
+                        },
+                        background_color: BackgroundColor(Color::Srgba(WHITE)),
+                        ..default()
+                    },
+                    InfoTextContainer,
+                ))
+                .with_children(|children| {
+                    children.spawn((
+                        Name::new("Info Text"),
+                        TextBundle::from_section(
+                            "",
+                            TextStyle {
+                                font_size: 24.,
+                                color: Color::Srgba(BLACK),
+                                ..default()
+                            },
+                        ),
+                        InfoTextTag,
+                    ));
+                });
+        });
 }
 
 fn spawn_end_ui(
@@ -73,9 +136,9 @@ fn spawn_end_ui(
             let (stars, message) = if letters.to_post == 0 {
                 (3, "Good job !")
             } else if letters_lost > letters.all / 2 {
-                (2, "Nice")
+                (2, "Not bad")
             } else {
-                (1, "Bofff")
+                (1, "Not insane")
             };
 
             children.heading(message, HeadingSize::H3);
@@ -139,13 +202,34 @@ fn handle_end_action(
             match action {
                 EndAction::Next => {
                     commands.trigger(Restart);
-                    current_level.0 = game_save.last_level_passed;
+                    current_level.0 += 1;
                 }
                 EndAction::Restart => {
                     commands.trigger(Restart);
                 }
                 EndAction::Menu => next_screen.set(Screen::Title),
             }
+        }
+    }
+}
+
+pub fn update_info_text(
+    time: Res<Time>,
+    mut info_text: ResMut<InfoText>,
+    mut text_query: Query<&mut Text, With<InfoTextTag>>,
+    mut container_query: Query<&mut Style, With<InfoTextContainer>>,
+) {
+    if info_text.has_changed {
+        if let Ok(mut text) = text_query.get_single_mut() {
+            text.sections[0].value = info_text.text.clone();
+            info_text.has_changed = false;
+        }
+    }
+    if let Ok(mut style) = container_query.get_single_mut() {
+        if info_text.text == "" {
+            style.bottom = Px(-100.);
+        } else {
+            style.bottom = Px(0.);
         }
     }
 }

@@ -45,11 +45,11 @@ where
             }
         }
 
-        info!(
-            "Loading assets which have {:?} extensions : {:?}",
-            self.extensions.join(", "),
-            assets
-        );
+        // info!(
+        //     "Loading assets which have {:?} extensions : {:?}",
+        //     self.extensions.join(", "),
+        //     assets
+        // );
 
         self.handles = assets;
         self

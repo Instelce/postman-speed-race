@@ -92,7 +92,7 @@ impl MapBuilder {
         let tiles = generate_level(
             inline_csv_to_matrix(base.clone(), map.tile_y(), map.tile_x()),
             &self.maps,
-            Some(1),
+            Some(2),
             None,
         );
 

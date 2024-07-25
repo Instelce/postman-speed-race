@@ -7,7 +7,8 @@ use crate::{
         house::HouseRotate,
         letter::Letters,
         spawn::{level::SpawnLevel, map::MapTag},
-        ui::spawn_ui,
+        ui::{spawn_ui, InfoText},
+        GameState,
     },
     ui::palette::BACKGROUND,
 };
@@ -32,7 +33,9 @@ fn enter_playing(
     mut clear_color: ResMut<ClearColor>,
     mut camera_query: Query<&mut OrthographicProjection, With<Camera>>,
     current_level: Res<CurrentLevel>,
+    mut state: ResMut<NextState<GameState>>,
 ) {
+    state.set(GameState::Run);
     commands.trigger(SpawnLevel(current_level.0));
 
     // set background
@@ -45,6 +48,7 @@ fn enter_playing(
     commands.init_resource::<Circuit>();
     commands.init_resource::<HouseRotate>();
     commands.init_resource::<EndCircuitTimer>();
+    commands.init_resource::<InfoText>();
 }
 
 fn exit_playing(
@@ -60,6 +64,7 @@ fn exit_playing(
     commands.remove_resource::<HouseRotate>();
     commands.remove_resource::<Letters>();
     commands.remove_resource::<EndCircuitTimer>();
+    commands.remove_resource::<InfoText>();
 }
 
 fn clear_entities(mut commands: Commands, query: Query<(Entity, &StateScoped<Screen>)>) {

@@ -4,7 +4,7 @@ use bevy_aseprite_ultra::prelude::{Animation, Aseprite, AsepriteAnimationUiBundl
 use super::{
     interaction::InteractionPalette,
     palette::{
-        BUTTON_HOVERED_BACKGROUND, BUTTON_PRESSED_BACKGROUND, BUTTON_TEXT, LABEL_TEXT,
+        BACKGROUND, BUTTON_HOVERED_BACKGROUND, BUTTON_PRESSED_BACKGROUND, BUTTON_TEXT, LABEL_TEXT,
         NODE_BACKGROUND,
     },
 };
@@ -60,6 +60,21 @@ impl Containers for Commands<'_, '_> {
                 },
                 ..default()
             },
+            RootAnchor::BottomCenter => NodeBundle {
+                style: Style {
+                    bottom: Px(0.),
+                    left: Px(0.),
+                    width: Percent(100.),
+                    height: Percent(50.),
+                    justify_content: JustifyContent::FlexEnd,
+                    align_items: AlignItems::Center,
+                    flex_direction: FlexDirection::Column,
+                    row_gap: Px(10.),
+                    position_type: PositionType::Absolute,
+                    ..default()
+                },
+                ..default()
+            },
             _ => NodeBundle::default(),
         };
 
@@ -71,7 +86,7 @@ impl Containers for Commands<'_, '_> {
 pub enum RootAnchor {
     Center,
     BottomLeft,
-    // BottomCenter,
+    BottomCenter,
     BottomRight,
     // CenterLeft,
     // CenterRight,

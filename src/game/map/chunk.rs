@@ -1,6 +1,7 @@
 use std::default;
 
 use bevy::prelude::*;
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 
 use super::types::{IntgridType, Tile};
@@ -48,6 +49,7 @@ pub enum ChunkType {
     Road(RoadChunkType),
     House,
     PostOffice,
+    Decor(i32),
     #[default]
     Empty,
 }
@@ -64,6 +66,10 @@ impl From<&str> for ChunkType {
             "Turn" => ChunkType::Road(RoadChunkType::Turn),
             "House" => ChunkType::House,
             "PostOffice" => ChunkType::PostOffice,
+            "Decor1" => ChunkType::Decor(1),
+            "Decor2" => ChunkType::Decor(2),
+            "Decor3" => ChunkType::Decor(3),
+            "Decor4" => ChunkType::Decor(4),
             _ => ChunkType::House,
         }
     }
@@ -84,6 +90,10 @@ impl From<&i64> for ChunkType {
             14 => ChunkType::Road(RoadChunkType::HorizontalJDown),
             15 => ChunkType::PostOffice,
             16 => ChunkType::House,
+            17 => {
+                let mut rng = rand::thread_rng();
+                ChunkType::Decor(rng.gen_range(1..=4) as i32)
+            }
             _ => ChunkType::House,
         }
     }

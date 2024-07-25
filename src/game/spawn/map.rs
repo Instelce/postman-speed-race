@@ -47,7 +47,7 @@ pub struct MapTag;
 #[reflect(Component)]
 pub struct ChunkTag;
 
-#[derive(Component, Reflect, Default)]
+#[derive(Component, Reflect, Default, PartialEq, Clone)]
 #[reflect(Component)]
 pub enum ChunkRoad {
     Horizontal,
@@ -205,7 +205,7 @@ fn spawn_map(
                 };
 
                 commands.entity(chunk_entity).insert((
-                    orientation,
+                    orientation.clone(),
                     Collider::new_rect_corners(
                         chunk.position + Vec2::new(-8., 8.),
                         chunk.position

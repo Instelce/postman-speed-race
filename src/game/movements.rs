@@ -112,7 +112,7 @@ pub fn player_movements(
                 circuit.direction = CircuitDirection::Clockwise;
                 circuit.direction_chosen = true;
             } else if rotation_factor < 0. {
-                circuit.direction = CircuitDirection::AntiClockwise;
+                circuit.direction = CircuitDirection::Clockwise; // haha no AntiClockwise
                 circuit.direction_chosen = true;
             }
         }
