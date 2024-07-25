@@ -9,3 +9,9 @@
 ### Fonts
 
 * Pixelify Sans: [OFL License](licenses/Pixelify_Sans_Licence.md)
+
+### Soundtracks / SFX
+
+* "ChillMenu" by NotJam
+* "RUNAWAY" by sergiofuentes
+* "Go" by Tallbeard Studios

@@ -6,9 +6,10 @@ use super::playing::CurrentLevel;
 use super::Screen;
 
 use crate::game::assets::handles::{
-    AsepriteAssets, Handles, HouseAssets, ParticleEffectAssets, SfxAssets, SoundtrackAssets,
-    TilesetAssets,
+    AsepriteAssets, FontAssets, Handles, HouseAssets, ParticleEffectAssets, SfxAssets,
+    SoundtrackAssets, TilesetAssets,
 };
+use crate::game::audio::soundtrack::PlaySoundtrack;
 use crate::game::save::GameSave;
 use crate::ui::prelude::*;
 
@@ -36,13 +37,17 @@ fn enter_loading(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(ParticleEffectAssets::new(&asset_server));
     commands.insert_resource(SfxAssets::new(&asset_server));
     commands.insert_resource(SoundtrackAssets::new(&asset_server));
+    commands.insert_resource(FontAssets::new(&asset_server));
 }
 
 fn check_all_loaded(
+    mut commands: Commands,
+
     image_assets: Res<Assets<Image>>,
     aseprite_assets: Res<Assets<Aseprite>>,
     effect_assets: Res<Assets<EffectAsset>>,
     audio_assets: Res<Assets<AudioSource>>,
+    font_assets: Res<Assets<Font>>,
 
     aseprite_handles: Res<AsepriteAssets>,
     tileset_assets: Res<TilesetAssets>,
@@ -50,6 +55,7 @@ fn check_all_loaded(
     effect_handles: Res<ParticleEffectAssets>,
     sfx_handles: Res<SfxAssets>,
     soundtrack_handles: Res<SoundtrackAssets>,
+    font_handles: Res<FontAssets>,
 
     mut next_screen: ResMut<NextState<Screen>>,
 ) {
@@ -58,12 +64,15 @@ fn check_all_loaded(
         && house_assets.all_loaded(&image_assets)
         && effect_handles.all_loaded(&effect_assets)
         && sfx_handles.all_loaded(&audio_assets)
-        && soundtrack_handles.all_loaded(&audio_assets);
+        && soundtrack_handles.all_loaded(&audio_assets)
+        && font_handles.all_loaded(&font_assets);
     if all_loaded {
         // #[cfg(not(feature = "dev"))]
         next_screen.set(Screen::Title);
 
         // #[cfg(feature = "dev")]
         // next_screen.set(Screen::Playing);
+
+        commands.trigger(PlaySoundtrack::Key("ChillMenu".into()));
     }
 }

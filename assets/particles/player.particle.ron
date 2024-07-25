@@ -1,7 +1,7 @@
 (
-    capacities: [1000],
+    capacities: [200],
     spawner: Once((
-        count: 40.,
+        count: 10.,
         spawn_immediately: false
     )),
     properties: {

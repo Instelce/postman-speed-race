@@ -7,7 +7,8 @@ use crate::screen::playing::CurrentLevel;
 use crate::ui::prelude::*;
 use crate::{screen::Screen, ui::prelude::Containers};
 
-use super::assets::handles::AsepriteAssets;
+use super::assets::handles::{AsepriteAssets, FontAssets};
+use super::circuit::CircuitDuration;
 use super::letter::{LetterUi, Letters};
 use super::restart::Restart;
 use super::save::GameSave;
@@ -19,7 +20,10 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_systems(
         Update,
-        (handle_end_action.run_if(in_state(GameState::EndScreen)),)
+        (
+            update_circuit_duration_text,
+            handle_end_action.run_if(in_state(GameState::EndScreen)),
+        )
             .run_if(in_state(Screen::Playing)),
     );
     app.add_systems(
@@ -80,7 +84,11 @@ pub struct InfoTextContainer {
     pub current_pos: Vec2,
 }
 
-pub fn spawn_ui(mut commands: Commands) {
+#[derive(Component, Debug, Clone, Copy, PartialEq, Reflect, Default)]
+#[reflect(Component)]
+pub struct CircuitDurationText;
+
+pub fn spawn_ui(mut commands: Commands, fonts: Res<FontAssets>) {
     commands.spawn((
         Name::new("Letter UI Root"),
         NodeBundle {
@@ -100,6 +108,40 @@ pub fn spawn_ui(mut commands: Commands) {
         StateScoped(Screen::Playing),
         LetterUi::default(),
     ));
+
+    // Circuit duration
+    commands
+        .spawn((
+            Name::new("Circuit Duration Container"),
+            NodeBundle {
+                style: Style {
+                    width: Percent(50.),
+                    top: Px(15.),
+                    right: Px(20.),
+                    justify_content: JustifyContent::FlexEnd,
+                    position_type: PositionType::Absolute,
+                    ..default()
+                },
+                // background_color: BackgroundColor(Color::srgba(1., 1., 1., 0.8)),
+                // border_radius: BorderRadius::all(Px(5.)),
+                ..default()
+            },
+            StateScoped(Screen::Playing),
+        ))
+        .with_children(|children| {
+            children.spawn((
+                Name::new("Circuit Duration Text"),
+                TextBundle::from_sections(vec![TextSection {
+                    value: "0.0".into(),
+                    style: TextStyle {
+                        font_size: 42.,
+                        color: Color::Srgba(WHITE),
+                        font: fonts.get("gamer"),
+                    },
+                }]),
+                CircuitDurationText,
+            ));
+        });
 
     // Info text
     commands
@@ -259,5 +301,14 @@ pub fn update_info_text(
             container.current_pos.y = container.current_pos.y.lerp(0., time.delta_seconds() * 10.);
         }
         style.bottom = Px(container.current_pos.y);
+    }
+}
+
+pub fn update_circuit_duration_text(
+    mut circuit_duration: ResMut<CircuitDuration>,
+    mut text_query: Query<&mut Text, With<CircuitDurationText>>,
+) {
+    if let Ok(mut text) = text_query.get_single_mut() {
+        text.sections[0].value = format!("{:.2}", circuit_duration.0);
     }
 }

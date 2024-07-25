@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 pub mod animation;
 pub mod assets;
-mod audio;
+pub mod audio;
 pub mod camera;
 pub mod circuit;
 pub mod collider;
@@ -21,6 +21,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
         save::plugin,
         assets::loaders::plugin,
+        audio::plugin,
         spawn::plugin,
         ui::plugin,
         animation::plugin,

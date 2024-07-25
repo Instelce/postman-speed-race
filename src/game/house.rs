@@ -74,24 +74,26 @@ fn follow_player_rotation(
     circuit: Res<Circuit>,
     mut query: Query<&mut Transform, With<FollowPlayerRotation>>,
 ) {
-    for mut transform in query.iter_mut() {
-        let mut reset_angle = match circuit.direction {
-            CircuitDirection::AntiClockwise => PI,
-            CircuitDirection::Clockwise => 0.,
-        };
+    if !circuit.in_turn {
+        for mut transform in query.iter_mut() {
+            let mut reset_angle = match circuit.direction {
+                CircuitDirection::AntiClockwise => PI,
+                CircuitDirection::Clockwise => 0.,
+            };
 
-        let turn = (circuit.turn_count) as f32 * PI / 2.;
+            let turn = (circuit.turn_count) as f32 * PI / 2.;
 
-        reset_angle += match circuit.direction {
-            CircuitDirection::AntiClockwise => -turn,
-            CircuitDirection::Clockwise => -turn,
-        };
+            reset_angle += match circuit.direction {
+                CircuitDirection::AntiClockwise => -turn,
+                CircuitDirection::Clockwise => -turn,
+            };
 
-        transform.rotation = transform.rotation.lerp(
-            Quat::from_axis_angle(Vec3::Z, reset_angle),
-            time.delta_seconds() * 30.,
-        );
-        transform.translation.z = 0.05;
+            transform.rotation = transform.rotation.lerp(
+                Quat::from_axis_angle(Vec3::Z, reset_angle),
+                time.delta_seconds() * 30.,
+            );
+            transform.translation.z = 0.05;
+        }
     }
 }
 
@@ -104,7 +106,7 @@ fn obstacle_check(
     if let Ok((player_collider, mut animation, mut controller)) = player_query.get_single_mut() {
         controller.start_timer.tick(time.delta());
         if !controller.damn && controller.start_timer.finished() {
-            for (obstacle_collider) in obstacles_query.iter() {
+            for obstacle_collider in obstacles_query.iter() {
                 if player_collider.collide(obstacle_collider) {
                     controller.damn = true;
                     animation.play("fall", AnimationRepeat::Count(0));

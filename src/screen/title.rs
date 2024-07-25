@@ -4,6 +4,7 @@ use bevy_aseprite_ultra::prelude::Aseprite;
 use crate::{
     game::{
         assets::handles::{AsepriteAssets, Handles},
+        audio::soundtrack::PlaySoundtrack,
         save::GameSave,
     },
     ui::prelude::*,
@@ -13,6 +14,7 @@ use super::{playing::CurrentLevel, Screen};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Title), enter_title);
+    app.add_systems(OnExit(Screen::Title), exit_title);
     app.register_type::<TitleAction>();
     app.add_systems(Update, handle_title_action.run_if(in_state(Screen::Title)));
 }
@@ -57,7 +59,11 @@ fn enter_title(
                 .button_sprite("Quit", aseprite_handles.get("button"), None)
                 .insert(TitleAction::Exit);
         });
+
+    // commands.trigger(PlaySoundtrack::Key("ChillMenu".into()))
 }
+
+fn exit_title(mut commands: Commands) {}
 
 fn handle_title_action(
     mut commands: Commands,
@@ -69,6 +75,7 @@ fn handle_title_action(
         if matches!(interaction, Interaction::Pressed) {
             match action {
                 TitleAction::Play => {
+                    commands.trigger(PlaySoundtrack::Disable);
                     next_screen.set(Screen::Playing);
                 }
                 TitleAction::Credits => next_screen.set(Screen::Credits),

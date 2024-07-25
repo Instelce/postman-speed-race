@@ -22,6 +22,7 @@ pub(super) fn plugin(app: &mut App) {
         (
             (
                 update_circuit,
+                update_circuit_duration.run_if(in_state(GameState::Run)),
                 check_end.run_if(not(in_state(GameState::EndScreen))),
             )
                 .in_set(AppSet::Update),
@@ -49,6 +50,10 @@ pub struct Circuit {
     pub direction: CircuitDirection,
     pub direction_chosen: bool,
 }
+
+#[derive(Resource, Reflect, Debug, Default)]
+#[reflect(Resource)]
+pub struct CircuitDuration(pub f32);
 
 #[derive(Debug, Reflect, Default, PartialEq, Eq)]
 pub enum CircuitDirection {
@@ -181,6 +186,16 @@ fn update_circuit(
                 }
             }
         }
+    }
+}
+
+fn update_circuit_duration(
+    time: Res<Time>,
+    circuit: Res<Circuit>,
+    mut circuit_duration: ResMut<CircuitDuration>,
+) {
+    if circuit.direction_chosen {
+        circuit_duration.0 += time.delta_seconds();
     }
 }
 

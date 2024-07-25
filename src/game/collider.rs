@@ -1,4 +1,7 @@
-use crate::{dev_tools::DebugContext, screen::Screen};
+#[cfg(feature = "dev")]
+use crate::dev_tools::DebugContext;
+
+use crate::screen::Screen;
 use bevy::prelude::*;
 
 use super::spawn::map::ChunkTag;

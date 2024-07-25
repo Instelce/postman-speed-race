@@ -219,6 +219,11 @@ pub fn move_letter(time: Res<Time>, mut letter_query: Query<(&mut Transform, &Le
         letter_transfrom.translation = letter_transfrom
             .translation
             .lerp(target_translation, time.delta_seconds() * 4.);
+        letter_transfrom.rotation = Quat::from_rotation_z(
+            (target_translation - letter_transfrom.translation)
+                .xy()
+                .to_angle(),
+        );
     }
 }
 

@@ -3,7 +3,8 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use super::Screen;
 use crate::{
     game::{
-        circuit::{Circuit, EndCircuitTimer},
+        audio::soundtrack::PlaySoundtrack,
+        circuit::{Circuit, CircuitDuration, EndCircuitTimer},
         house::HouseRotate,
         letter::Letters,
         spawn::{level::SpawnLevel, map::MapTag},
@@ -49,6 +50,9 @@ fn enter_playing(
     commands.init_resource::<HouseRotate>();
     commands.init_resource::<EndCircuitTimer>();
     commands.init_resource::<InfoText>();
+    commands.init_resource::<CircuitDuration>();
+
+    commands.trigger(PlaySoundtrack::Key("Go".into()));
 }
 
 fn exit_playing(
@@ -65,6 +69,10 @@ fn exit_playing(
     commands.remove_resource::<Letters>();
     commands.remove_resource::<EndCircuitTimer>();
     commands.remove_resource::<InfoText>();
+    commands.remove_resource::<CircuitDuration>();
+
+    commands.trigger(PlaySoundtrack::Disable);
+    commands.trigger(PlaySoundtrack::Key("ChillMenu".into()));
 }
 
 fn clear_entities(mut commands: Commands, query: Query<(Entity, &StateScoped<Screen>)>) {

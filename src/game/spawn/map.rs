@@ -278,7 +278,7 @@ fn spawn_map(
                 // House spawn
                 let house = &chunk.house.clone().unwrap();
                 let number = rng.gen_range(1..=6);
-                let house_postition = (house.position * Vec2::new(1., -1.));
+                let house_postition = house.position * Vec2::new(1., -1.);
                 let house_entity = commands
                     .spawn((
                         Name::new("House"),

@@ -119,3 +119,12 @@ impl SoundtrackAssets {
         Self(Handles::new(vec!["ogg"], Some("audio/soundtracks".into())).load(asset_server))
     }
 }
+
+#[derive(Resource, Reflect, Deref, DerefMut)]
+pub struct FontAssets(Handles<Font>);
+
+impl FontAssets {
+    pub fn new(asset_server: &AssetServer) -> Self {
+        Self(Handles::new(vec!["ttf"], Some("fonts".into())).load(asset_server))
+    }
+}

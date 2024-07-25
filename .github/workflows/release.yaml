@@ -17,12 +17,12 @@ on:
 # Configure constants for this workflow.
 env:
   # The base filename of the binary produced by `cargo build`.
-  BINARY: game_name
+  BINARY: postman_speed_race
   # The name to use for the packaged application produced by this workflow.
-  PACKAGE_NAME: game_name
+  PACKAGE_NAME: postman_speed_race
   # The itch.io page to upload to, in the format: `user-name/project-name`.
   # Comment this out to disable.
-  ITCH_TARGET: instelce/game_name
+  ITCH_TARGET: instelce/postman-speed-race
   # The organization or author that owns the rights to the game.
   OWNER: instelce
   # The path to the assets directory.
