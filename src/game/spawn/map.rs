@@ -69,6 +69,10 @@ pub struct PostOffice;
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
+pub struct FollowPlayerRotation;
+
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
 pub struct EndChunk;
 
 #[derive(Component, Default, Deref, DerefMut, Debug)]
@@ -179,7 +183,9 @@ fn spawn_map(
                             },
                         ));
 
-                        if *intgrid == IntgridType::Empty {
+                        if *intgrid == IntgridType::Empty
+                            && matches!(chunk.chunk_type, ChunkType::Road(_))
+                        {
                             a.insert((NotRoadTile, Collider::rect(8., 8.)));
                         }
                     }
@@ -349,6 +355,44 @@ fn spawn_map(
                     .entity(chunk_entity)
                     .insert(HouseOrientation { angle_mul })
                     .push_children(&[collider_for_letter_boooox]);
+            }
+            ChunkType::Decor(_) => {
+                // Spawn trees
+                commands.entity(chunk_entity).with_children(|children| {
+                    children
+                        .spawn((
+                            SpatialBundle {
+                                transform: Transform::from_translation(Vec3::new(
+                                    PIXEL_CHUNK_SIZE / 2.,
+                                    -PIXEL_CHUNK_SIZE / 2.,
+                                    0.,
+                                )),
+                                ..default()
+                            },
+                            FollowPlayerRotation,
+                        ))
+                        .with_children(|children| {
+                            for tree in chunk.trees.iter() {
+                                children.spawn((
+                                    Name::new("Tree"),
+                                    AsepriteAnimationBundle {
+                                        aseprite: aseprites.get("trees"),
+                                        animation: Animation::default()
+                                            .with_tag(rng.gen_range(1..=4).to_string().as_str()),
+                                        transform: Transform::from_translation(
+                                            (tree.0
+                                                + Vec2::new(
+                                                    -PIXEL_CHUNK_SIZE / 2.,
+                                                    PIXEL_CHUNK_SIZE / 2.,
+                                                ))
+                                            .extend(0.),
+                                        ),
+                                        ..default()
+                                    },
+                                ));
+                            }
+                        });
+                });
             }
             _ => {}
         }

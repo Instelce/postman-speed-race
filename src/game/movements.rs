@@ -11,6 +11,7 @@ use super::{
         map::{ChunkTag, NotRoadTile},
         player::{Player, PlayerController, PlayerMovement},
     },
+    ui::InfoText,
     GameState,
 };
 
@@ -200,6 +201,7 @@ fn off_the_road(
     mut player_query: Query<(&mut PlayerMovement, &mut PlayerController, &Collider), With<Player>>,
     chunk_query: Query<(&Children, &Collider), With<ChunkTag>>,
     tile_query: Query<(&Parent, &Collider), With<NotRoadTile>>,
+    mut info_text: ResMut<InfoText>,
 ) {
     if let Ok((mut movement, mut controller, player_collider)) = player_query.get_single_mut() {
         for (children, chunk_collider) in chunk_query.iter() {
@@ -229,6 +231,7 @@ fn off_the_road(
 
         if let Some(collider) = &controller.actual_chunk {
             if !player_collider.collide(collider) {
+                info_text.set("Press R to restart");
                 movement.friction = 20.;
                 controller.actual_chunk = None;
             }

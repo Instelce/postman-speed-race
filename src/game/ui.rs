@@ -36,22 +36,37 @@ enum EndAction {
     Menu,
 }
 
-#[derive(Resource, Debug, Default, PartialEq, Eq, Reflect)]
+#[derive(Resource, Debug, PartialEq, Eq, Reflect)]
 #[reflect(Resource)]
 pub struct InfoText {
     pub text: String,
     has_changed: bool,
+    slide_down: bool,
+    show: bool,
+}
+
+impl Default for InfoText {
+    fn default() -> Self {
+        Self {
+            text: "".into(),
+            has_changed: false,
+            slide_down: true,
+            show: false,
+        }
+    }
 }
 
 impl InfoText {
     pub fn set(&mut self, text: impl Into<String>) {
         self.text = text.into();
         self.has_changed = true;
+        self.show = true;
     }
 
     pub fn reset(&mut self) {
-        self.text = "".into();
+        self.show = false;
         self.has_changed = true;
+        self.slide_down = true;
     }
 }
 
@@ -59,9 +74,11 @@ impl InfoText {
 #[reflect(Component)]
 pub struct InfoTextTag;
 
-#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
+#[derive(Component, Debug, Clone, Copy, PartialEq, Reflect, Default)]
 #[reflect(Component)]
-pub struct InfoTextContainer;
+pub struct InfoTextContainer {
+    pub current_pos: Vec2,
+}
 
 pub fn spawn_ui(mut commands: Commands) {
     commands.spawn((
@@ -87,18 +104,21 @@ pub fn spawn_ui(mut commands: Commands) {
     // Info text
     commands
         .ui_root(RootAnchor::BottomCenter)
+        .insert(StateScoped(Screen::Playing))
         .with_children(|children| {
             children
                 .spawn((
                     NodeBundle {
                         style: Style {
-                            padding: UiRect::px(10., 10., 10., 15.),
+                            padding: UiRect::px(20., 20., 10., 10.),
+                            margin: UiRect::bottom(Px(10.)),
                             ..default()
                         },
-                        background_color: BackgroundColor(Color::Srgba(WHITE)),
+                        background_color: BackgroundColor(Color::srgba(1., 1., 1., 0.4)),
+                        border_radius: BorderRadius::all(Px(5.)),
                         ..default()
                     },
-                    InfoTextContainer,
+                    InfoTextContainer::default(),
                 ))
                 .with_children(|children| {
                     children.spawn((
@@ -217,7 +237,7 @@ pub fn update_info_text(
     time: Res<Time>,
     mut info_text: ResMut<InfoText>,
     mut text_query: Query<&mut Text, With<InfoTextTag>>,
-    mut container_query: Query<&mut Style, With<InfoTextContainer>>,
+    mut container_query: Query<(&mut Style, &mut InfoTextContainer)>,
 ) {
     if info_text.has_changed {
         if let Ok(mut text) = text_query.get_single_mut() {
@@ -225,11 +245,19 @@ pub fn update_info_text(
             info_text.has_changed = false;
         }
     }
-    if let Ok(mut style) = container_query.get_single_mut() {
-        if info_text.text == "" {
-            style.bottom = Px(-100.);
+    if let Ok((mut style, mut container)) = container_query.get_single_mut() {
+        if !info_text.show && info_text.slide_down {
+            container.current_pos.y = container
+                .current_pos
+                .y
+                .lerp(-100., time.delta_seconds() * 10.);
+
+            if container.current_pos.y == -100. {
+                info_text.slide_down = false;
+            }
         } else {
-            style.bottom = Px(0.);
+            container.current_pos.y = container.current_pos.y.lerp(0., time.delta_seconds() * 10.);
         }
+        style.bottom = Px(container.current_pos.y);
     }
 }

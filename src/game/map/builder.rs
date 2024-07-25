@@ -5,7 +5,8 @@ use serde::{Deserialize, Serialize};
 
 use super::{
     chunk::{
-        self, Chunk, ChunkConnextion, ChunkType, House, RoadChunkType, CHUNK_SIZE, PIXEL_CHUNK_SIZE,
+        self, Chunk, ChunkConnextion, ChunkType, House, RoadChunkType, Tree, CHUNK_SIZE,
+        PIXEL_CHUNK_SIZE,
     },
     ldtk::Project,
     transformer::generate_level,
@@ -15,6 +16,7 @@ use super::{
 
 pub struct MapBuilder {
     maps: Project,
+    /// list of chunks which can be placed in the map
     chunks: HashMap<ChunkType, Chunk>,
     map: Map,
 }
@@ -45,13 +47,19 @@ impl MapBuilder {
                 None,
             );
 
-            // Houses
+            // House
             let mut house = None;
             for entity in level.get_layer("Houses").entity_instances.iter() {
                 house = Some(House {
                     position: Vec2::new(entity.px[0] as f32, entity.px[1] as f32),
                     ..default()
                 });
+            }
+
+            // Trees
+            let mut trees = Vec::new();
+            for entity in level.get_layer("Trees").entity_instances.iter() {
+                trees.push(Tree(Vec2::new(entity.px[0] as f32, -entity.px[1] as f32)));
             }
 
             let chunk_type = ChunkType::from(level.identifier.as_str());
@@ -63,6 +71,7 @@ impl MapBuilder {
                     tileset_tiles: tiles.into_iter().flatten().collect(),
                     chunk_type,
                     house,
+                    trees,
                     ..default()
                 },
             );
@@ -93,6 +102,14 @@ impl MapBuilder {
             inline_csv_to_matrix(base.clone(), map.tile_y(), map.tile_x()),
             &self.maps,
             Some(2),
+            None,
+        );
+
+        // Decors chunks
+        let decor_tiles = generate_level(
+            inline_csv_to_matrix(base.clone(), map.tile_y(), map.tile_x()),
+            &self.maps,
+            Some(0),
             None,
         );
 
@@ -147,6 +164,21 @@ impl MapBuilder {
                         chunk.flip_x = true;
                         chunk.flip_y = true;
                     }
+                }
+
+                self.map.chunks.push(chunk);
+            }
+        }
+
+        for (y, row) in decor_tiles.iter().enumerate() {
+            for (x, chunk_tile) in row.iter().enumerate() {
+                let mut chunk = Chunk::default();
+
+                if chunk_tile.value != 0 {
+                    let chunk_type = ChunkType::from(&chunk_tile.value);
+                    chunk = self.chunks.get(&chunk_type).unwrap().clone();
+                    chunk.position =
+                        Vec2::new(PIXEL_CHUNK_SIZE * x as f32, -PIXEL_CHUNK_SIZE * y as f32);
                 }
 
                 self.map.chunks.push(chunk);

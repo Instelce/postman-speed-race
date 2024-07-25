@@ -10,12 +10,15 @@ use super::{
     assets::handles::AsepriteAssets,
     circuit::{Circuit, CircuitDirection},
     map::chunk::PIXEL_CHUNK_SIZE,
-    spawn::map::PostOffice,
+    spawn::map::{FollowPlayerRotation, PostOffice},
 };
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<HouseOrientation>();
-    app.add_systems(Update, (rotate_house).run_if(in_state(Screen::Playing)));
+    app.add_systems(
+        Update,
+        (rotate_house, follow_player_rotation).run_if(in_state(Screen::Playing)),
+    );
 }
 
 #[derive(Resource, Default, Reflect)]
@@ -57,5 +60,31 @@ pub fn rotate_house(
         }
 
         house_rotate.0 = true;
+    }
+}
+
+fn follow_player_rotation(
+    time: Res<Time>,
+    circuit: Res<Circuit>,
+    mut query: Query<&mut Transform, With<FollowPlayerRotation>>,
+) {
+    for mut transform in query.iter_mut() {
+        let mut reset_angle = match circuit.direction {
+            CircuitDirection::AntiClockwise => PI,
+            CircuitDirection::Clockwise => 0.,
+        };
+
+        let turn = (circuit.turn_count) as f32 * PI / 2.;
+
+        reset_angle += match circuit.direction {
+            CircuitDirection::AntiClockwise => -turn,
+            CircuitDirection::Clockwise => -turn,
+        };
+
+        transform.rotation = transform.rotation.lerp(
+            Quat::from_axis_angle(Vec3::Z, reset_angle),
+            time.delta_seconds() * 30.,
+        );
+        transform.translation.z = 0.05;
     }
 }

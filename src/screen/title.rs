@@ -1,4 +1,4 @@
-use bevy::{ecs::label, prelude::*};
+use bevy::{color::palettes::css::WHITE, ecs::label, prelude::*};
 use bevy_aseprite_ultra::prelude::Aseprite;
 
 use crate::{
@@ -29,9 +29,12 @@ enum TitleAction {
 
 fn enter_title(
     mut commands: Commands,
+    mut clear_color: ResMut<ClearColor>,
     aseprite_handles: Res<AsepriteAssets>,
     game_save: Res<GameSave>,
 ) {
+    clear_color.0 = Color::Srgba(WHITE);
+
     commands
         .ui_root(RootAnchor::Center)
         .insert(StateScoped(Screen::Title))

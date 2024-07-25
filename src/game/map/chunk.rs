@@ -17,6 +17,7 @@ pub struct Chunk {
     pub chunk_type: ChunkType,
     pub connextions: Vec<ChunkConnextion>,
     pub house: Option<House>,
+    pub trees: Vec<Tree>,
     pub is_end: bool,
     pub flip_x: bool,
     pub flip_y: bool,
@@ -123,3 +124,6 @@ pub struct House {
     pub position: Vec2,
     pub rotation: f32,
 }
+
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
+pub struct Tree(pub Vec2);
