@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
 
 use crate::screen::Screen;
 
@@ -7,15 +7,19 @@ use super::circuit::{Circuit, CircuitDirection, CircuitOrientation};
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<CameraTarget>();
     app.add_systems(FixedUpdate, follow_target.run_if(in_state(Screen::Playing)));
+    app.add_systems(Update, resizing);
 }
+
+#[derive(Component, Reflect)]
+pub struct MainCamera;
 
 #[derive(Component, Reflect)]
 pub struct CameraTarget;
 
 fn follow_target(
     time: Res<Time>,
-    mut camera_query: Query<&mut Transform, With<Camera>>,
-    target_query: Query<&Transform, (With<CameraTarget>, Without<Camera>)>,
+    mut camera_query: Query<&mut Transform, With<MainCamera>>,
+    target_query: Query<&Transform, (With<CameraTarget>, Without<MainCamera>)>,
     circuit: Res<Circuit>,
 ) {
     if let Ok(mut camera_transform) = camera_query.get_single_mut() {
@@ -23,9 +27,9 @@ fn follow_target(
             let mut offset = if circuit.in_turn {
                 Vec3::ZERO
             } else if circuit.current_orientation == CircuitOrientation::Vertical {
-                Vec3::Y * 30.
+                Vec3::Y * 20.
             } else if circuit.current_orientation == CircuitOrientation::Horizontal {
-                Vec3::X * 30.
+                Vec3::X * 20.
             } else {
                 Vec3::ZERO
             };
@@ -51,6 +55,25 @@ fn follow_target(
             camera_transform.rotation = camera_transform
                 .rotation
                 .lerp(target_transform.rotation, time.delta_seconds() * 5.);
+        }
+    }
+}
+
+fn resizing(
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    mut camera_query: Query<&mut OrthographicProjection, With<MainCamera>>,
+) {
+    if !window_query.is_empty() && !camera_query.is_empty() {
+        let window = window_query.single();
+        let mut projection = camera_query.single_mut();
+
+        let start_scale = 0.4;
+        let start_width = 1280.;
+
+        if start_width == window.width().ceil() {
+            projection.scale = start_scale;
+        } else {
+            projection.scale = start_scale * (start_width / window.width());
         }
     }
 }

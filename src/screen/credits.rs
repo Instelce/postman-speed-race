@@ -4,6 +4,7 @@ use crate::{
     game::assets::handles::AsepriteAssets,
     ui::{
         interaction::InteractionQuery,
+        palette::LABEL_TEXT,
         prelude::{Containers, HeadingSize, RootAnchor, Widgets},
     },
     utils::{get_root_file, read_lines},
@@ -51,7 +52,16 @@ fn enter_credits(mut commands: Commands, aseprite_handles: Res<AsepriteAssets>) 
                         .unwrap()
                         .replace("[", "")
                         .replace("]", "");
-                    children.label(line);
+                    children.spawn(
+                        (TextBundle::from_section(
+                            line,
+                            TextStyle {
+                                color: LABEL_TEXT,
+                                ..default()
+                            },
+                        )
+                        .with_text_justify(JustifyText::Center)),
+                    );
                 }
             }
 

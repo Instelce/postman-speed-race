@@ -39,7 +39,7 @@ fn enter_title(
         .ui_root(RootAnchor::Center)
         .insert(StateScoped(Screen::Title))
         .with_children(|children| {
-            children.heading("Game", HeadingSize::H1);
+            children.heading("Posman\nSpeed Race", HeadingSize::H1);
 
             let mut play = children.button_sprite("Play", aseprite_handles.get("button"), None);
             if game_save.last_level_passed == 0 {

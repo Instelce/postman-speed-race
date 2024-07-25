@@ -18,16 +18,15 @@ use super::{
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         FixedUpdate,
-        (
-            player_movements.in_set(AppSet::RecordInput),
-            (update_entities_transform, off_the_road).in_set(AppSet::Update),
-        )
-            .run_if(in_state(Screen::Playing)),
+        (player_movements, update_entities_transform).run_if(in_state(Screen::Playing)),
     );
 
     app.add_systems(
         Update,
-        (clear_movement_end.run_if(in_state(GameState::End))),
+        (
+            off_the_road.run_if(in_state(Screen::Playing)),
+            clear_movement_end.run_if(in_state(GameState::End)),
+        ),
     );
 }
 
@@ -198,12 +197,16 @@ fn update_entities_transform(mut query: Query<(&mut Transform, &mut Velocity)>) 
 }
 
 fn off_the_road(
+    mut gizmos: Gizmos,
     mut player_query: Query<(&mut PlayerMovement, &mut PlayerController, &Collider), With<Player>>,
     chunk_query: Query<(&Children, &Collider), With<ChunkTag>>,
     tile_query: Query<(&Parent, &Collider), With<NotRoadTile>>,
     mut info_text: ResMut<InfoText>,
 ) {
     if let Ok((mut movement, mut controller, player_collider)) = player_query.get_single_mut() {
+        if !controller.start_timer.finished() {
+            return;
+        }
         for (children, chunk_collider) in chunk_query.iter() {
             if player_collider.collide(chunk_collider) {
                 controller.actual_chunk = Some(chunk_collider.clone());

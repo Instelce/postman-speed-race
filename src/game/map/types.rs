@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+use bevy::prelude::default;
 use serde::{Deserialize, Serialize};
 
 pub type MatrixType<T> = Vec<Vec<T>>;
@@ -29,6 +30,25 @@ impl From<&i64> for IntgridType {
             1 => Self::Road,
             2 => Self::Dirt,
             3 => Self::Fence,
+            0 => Self::Empty,
+            _ => Self::Empty,
+        }
+    }
+}
+
+#[derive(PartialEq, Clone, Copy, Serialize, Deserialize, Default, Debug)]
+pub enum ObstacleType {
+    WatterPuddle,
+    RoadWork,
+    #[default]
+    Empty,
+}
+
+impl From<&i64> for ObstacleType {
+    fn from(value: &i64) -> Self {
+        match value {
+            1 => Self::WatterPuddle,
+            2 => Self::RoadWork,
             0 => Self::Empty,
             _ => Self::Empty,
         }

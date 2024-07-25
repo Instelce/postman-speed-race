@@ -1,5 +1,5 @@
 use core::num;
-use std::default;
+use std::{default, f32::consts::PI};
 
 use bevy::{
     color::palettes::css::{ORANGE, RED},
@@ -20,7 +20,7 @@ use crate::{
             builder::MapBuilder,
             chunk::{ChunkConnextion, ChunkType, RoadChunkType, CHUNK_SIZE, PIXEL_CHUNK_SIZE},
             ldtk::Project,
-            types::IntgridType,
+            types::{IntgridType, ObstacleType},
         },
     },
     screen::Screen,
@@ -66,6 +66,10 @@ pub struct NotRoadTile;
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
 pub struct PostOffice;
+
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
+pub struct ObstacleTag;
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
@@ -221,7 +225,15 @@ fn spawn_map(
                 ));
             }
             ChunkType::PostOffice => {
-                commands.entity(chunk_entity).insert(PostOffice);
+                commands.entity(chunk_entity).insert((
+                    PostOffice,
+                    Collider::new_rect_corners(
+                        chunk.position + Vec2::new(-8., 8.),
+                        chunk.position
+                            + Vec2::new(PIXEL_CHUNK_SIZE, -PIXEL_CHUNK_SIZE)
+                            + Vec2::new(-8., 8.),
+                    ),
+                ));
 
                 // Spawn a lot of letters
                 commands
@@ -356,44 +368,7 @@ fn spawn_map(
                     .insert(HouseOrientation { angle_mul })
                     .push_children(&[collider_for_letter_boooox]);
             }
-            ChunkType::Decor(_) => {
-                // Spawn trees
-                commands.entity(chunk_entity).with_children(|children| {
-                    children
-                        .spawn((
-                            SpatialBundle {
-                                transform: Transform::from_translation(Vec3::new(
-                                    PIXEL_CHUNK_SIZE / 2.,
-                                    -PIXEL_CHUNK_SIZE / 2.,
-                                    0.,
-                                )),
-                                ..default()
-                            },
-                            FollowPlayerRotation,
-                        ))
-                        .with_children(|children| {
-                            for tree in chunk.trees.iter() {
-                                children.spawn((
-                                    Name::new("Tree"),
-                                    AsepriteAnimationBundle {
-                                        aseprite: aseprites.get("trees"),
-                                        animation: Animation::default()
-                                            .with_tag(rng.gen_range(1..=4).to_string().as_str()),
-                                        transform: Transform::from_translation(
-                                            (tree.0
-                                                + Vec2::new(
-                                                    -PIXEL_CHUNK_SIZE / 2.,
-                                                    PIXEL_CHUNK_SIZE / 2.,
-                                                ))
-                                            .extend(0.),
-                                        ),
-                                        ..default()
-                                    },
-                                ));
-                            }
-                        });
-                });
-            }
+            ChunkType::Decor(_) => {}
             _ => {}
         }
 
@@ -403,6 +378,117 @@ fn spawn_map(
 
         chunks.push(chunk_entity);
     }
+
+    // Spawn chunks
+    for (_, chunk) in map.decor_chunks.iter().enumerate() {
+        if chunk.is_empty() {
+            continue;
+        }
+
+        let chunk_entity = commands
+            .spawn((
+                Name::new("Decor"),
+                SpatialBundle {
+                    transform: Transform::from_translation(chunk.position.extend(-0.02)),
+                    ..default()
+                },
+                ChunkConnextions(chunk.connextions.clone()),
+                ChunkTag,
+            ))
+            .id();
+
+        // Spawn trees
+        commands.entity(chunk_entity).with_children(|children| {
+            children
+                .spawn((
+                    SpatialBundle {
+                        transform: Transform::from_translation(Vec3::new(
+                            PIXEL_CHUNK_SIZE / 2.,
+                            -PIXEL_CHUNK_SIZE / 2.,
+                            0.,
+                        )),
+                        ..default()
+                    },
+                    FollowPlayerRotation,
+                ))
+                .with_children(|children| {
+                    for tree in chunk.trees.iter() {
+                        children.spawn((
+                            Name::new("Tree"),
+                            AsepriteAnimationBundle {
+                                aseprite: aseprites.get("trees"),
+                                animation: Animation::default()
+                                    .with_tag(rng.gen_range(1..=4).to_string().as_str()),
+                                transform: Transform::from_translation(
+                                    (tree.0
+                                        + Vec2::new(-PIXEL_CHUNK_SIZE / 2., PIXEL_CHUNK_SIZE / 2.))
+                                    .extend(0.),
+                                ),
+                                ..default()
+                            },
+                        ));
+                    }
+                });
+        });
+
+        chunks.push(chunk_entity);
+    }
+
+    println!("{}, {}", map.chunks.len(), map.decor_chunks.len());
+
+    // Spawn obstacles
+    commands.entity(map_entity).with_children(|children| {
+        for obstacle in map.obstacles.iter() {
+            let aseprite = match &obstacle.obstacle_type {
+                ObstacleType::RoadWork => "manhole-cover",
+                ObstacleType::WatterPuddle => "water-puddle",
+                _ => "",
+            };
+
+            let is_horizontal = obstacle.chunk.has_connexion(ChunkConnextion::Left)
+                || obstacle.chunk.has_connexion(ChunkConnextion::Right);
+
+            let place_rand = if rng.gen_ratio(1, 2) {
+                16. + 8.
+            } else {
+                -1. * (16. + 8.)
+            };
+
+            let place = if is_horizontal {
+                Vec2::Y * place_rand
+            } else {
+                Vec2::X * place_rand
+            };
+
+            let angle = if is_horizontal { -PI / 2. } else { 0. };
+
+            println!(
+                "> {:?}, {:?}, {}, {}",
+                obstacle.obstacle_type, place, is_horizontal, place_rand
+            );
+
+            let tag = match &obstacle.obstacle_type {
+                ObstacleType::RoadWork => None,
+                ObstacleType::WatterPuddle => Some(rng.gen_range(1..=2).to_string()),
+                _ => None,
+            };
+
+            children.spawn((
+                Name::new(format!("{:?} Obstacle", obstacle.obstacle_type)),
+                AsepriteAnimationBundle {
+                    aseprite: aseprites.get(aseprite),
+                    animation: Animation { tag, ..default() },
+                    transform: Transform::from_translation(
+                        (obstacle.chunk_center + place).extend(0.),
+                    )
+                    .with_rotation(Quat::from_axis_angle(Vec3::Z, angle)),
+                    ..default()
+                },
+                ObstacleTag,
+                Collider::new_rect(obstacle.chunk_center + place, Vec2::splat(10.)),
+            ));
+        }
+    });
 
     commands.entity(map_entity).push_children(chunks.as_slice());
 }

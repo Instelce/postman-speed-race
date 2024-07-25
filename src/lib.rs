@@ -14,6 +14,7 @@ use bevy::{
 };
 use bevy_aseprite_ultra::BevySprityPlugin;
 use bevy_hanabi::HanabiPlugin;
+use game::camera::MainCamera;
 use utils::get_asset_path;
 use winit::window::Icon;
 
@@ -96,7 +97,7 @@ pub enum AppSet {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn((Camera2dBundle::default(), MainCamera));
 }
 
 fn set_window_icon(

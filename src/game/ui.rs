@@ -114,7 +114,7 @@ pub fn spawn_ui(mut commands: Commands) {
                             margin: UiRect::bottom(Px(10.)),
                             ..default()
                         },
-                        background_color: BackgroundColor(Color::srgba(1., 1., 1., 0.4)),
+                        background_color: BackgroundColor(Color::srgba(1., 1., 1., 0.8)),
                         border_radius: BorderRadius::all(Px(5.)),
                         ..default()
                     },

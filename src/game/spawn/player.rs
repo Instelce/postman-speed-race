@@ -41,6 +41,8 @@ pub struct PlayerController {
     pub letter_launched: bool,
     pub actual_collision: Option<Collider>,
     pub actual_chunk: Option<Collider>,
+    pub damn: bool,
+    pub start_timer: Timer,
 }
 
 impl Default for PlayerController {
@@ -52,6 +54,8 @@ impl Default for PlayerController {
             letter_launched: false,
             actual_collision: None,
             actual_chunk: None,
+            damn: false,
+            start_timer: Timer::from_seconds(1., TimerMode::Once),
         }
     }
 }
@@ -88,6 +92,7 @@ fn spawn_player(
     aseprite_handles: Res<AsepriteAssets>,
     particles: Res<ParticleEffectAssets>,
 ) {
+    println!("Spawning player {:?}", trigger.event().0);
     commands
         .spawn((
             Name::new("Player"),
@@ -105,7 +110,7 @@ fn spawn_player(
             PlayerController::default(),
             PlayerMovement::default(),
             Velocity::default(),
-            Collider::rect(5., 5.),
+            Collider::new_rect(trigger.event().0, Vec2::splat(5.)),
             //
             CameraTarget,
             //

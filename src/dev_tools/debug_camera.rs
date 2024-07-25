@@ -1,6 +1,8 @@
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_pancam::{PanCam, PanCamPlugin};
 
+use crate::game::camera::MainCamera;
+
 pub(super) fn plugin(app: &mut App) {
     app.insert_resource(DebugCameraSettings::default());
     app.add_plugins(PanCamPlugin::default());
@@ -64,7 +66,7 @@ impl Default for FlyCamera {
 fn toggle_spawn_debug_camera(
     mut commands: Commands,
     mut debug_camera_settings: ResMut<DebugCameraSettings>,
-    main_camera: Query<(Entity, &Transform), With<Camera>>,
+    main_camera: Query<(Entity, &Transform), With<MainCamera>>,
     debug_camera: Query<(Entity, &GlobalTransform), With<DebugCamera>>,
 ) {
     if debug_camera_settings.enable {
@@ -80,7 +82,7 @@ fn toggle_spawn_debug_camera(
         // add main camera
         let mut camera_bundle = Camera2dBundle::default();
         camera_bundle.projection.scale = 0.4;
-        commands.spawn(camera_bundle);
+        commands.spawn((camera_bundle, MainCamera));
     } else {
         debug_camera_settings.enable = true;
 

@@ -46,7 +46,7 @@ fn enter_levels(mut commands: Commands, game_save: Res<GameSave>, aseprites: Res
                             children
                                 .button_sprite(
                                     level_data.name.clone(),
-                                    aseprites.get("button"),
+                                    aseprites.get("big-button"),
                                     Some(Vec2::splat(250.)),
                                 )
                                 .insert((LevelsAction::Play(i as i32), DisableButton));
@@ -54,7 +54,7 @@ fn enter_levels(mut commands: Commands, game_save: Res<GameSave>, aseprites: Res
                             children
                                 .button_sprite(
                                     level_data.name.clone(),
-                                    aseprites.get("button"),
+                                    aseprites.get("big-button"),
                                     Some(Vec2::splat(250.)),
                                 )
                                 .insert(LevelsAction::Play(i as i32));

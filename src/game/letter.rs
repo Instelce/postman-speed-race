@@ -30,10 +30,13 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         (
             update_letter_ui,
-            launch_zone_detection,
-            animate_letter_box,
-            launch_letter.in_set(AppSet::RecordInput),
-            remove_letter,
+            (
+                launch_zone_detection,
+                animate_letter_box,
+                launch_letter,
+                remove_letter,
+            )
+                .chain(),
         )
             .run_if(in_state(Screen::Playing)),
     );
@@ -229,7 +232,7 @@ fn remove_letter(
     mut letters: ResMut<Letters>,
 ) {
     if let Ok((letter, letter_collider)) = letter_query.get_single() {
-        for ((letter_box, target_collider, mut target_animation)) in target_query.iter_mut() {
+        for (_, target_collider, mut target_animation) in target_query.iter_mut() {
             if letter_collider.collide(target_collider) {
                 // Remove the letter and play letter box animation
                 target_animation.play("letter-enter", AnimationRepeat::Count(0));

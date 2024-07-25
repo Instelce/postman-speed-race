@@ -1,3 +1,4 @@
+use crate::screen::playing::CurrentLevel;
 use crate::utils::{get_asset_path, path_exist};
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -60,8 +61,12 @@ pub struct LevelData {
     pub name: String,
 }
 
-fn save(mut game_save: ResMut<GameSave>) {
-    game_save.last_level_passed += 1;
+fn save(mut game_save: ResMut<GameSave>, current_level: Res<CurrentLevel>) {
+    if game_save.last_level_passed < game_save.levels.len() as i32
+        && current_level.0 == game_save.last_level_passed
+    {
+        game_save.last_level_passed += 1;
+    }
     let mut file = File::create("assets/data/save.ron").unwrap();
     file.write_all(&ron::to_string(&game_save.as_ref()).unwrap().as_bytes())
         .unwrap();

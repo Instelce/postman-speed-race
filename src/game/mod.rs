@@ -3,7 +3,7 @@ use bevy::prelude::*;
 pub mod animation;
 pub mod assets;
 mod audio;
-mod camera;
+pub mod camera;
 pub mod circuit;
 pub mod collider;
 pub mod house;

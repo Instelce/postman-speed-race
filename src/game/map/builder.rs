@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use crate::game::map::types::ObstacleType;
+
 use super::{
     chunk::{
         self, Chunk, ChunkConnextion, ChunkType, House, RoadChunkType, Tree, CHUNK_SIZE,
@@ -94,6 +96,11 @@ impl MapBuilder {
         // pour chaque intgrid ajouter le chunk a la position
         let map = self.maps.levels.get(*level_indice as usize).unwrap();
         let base = map.get_layer("Base").int_grid_csv.clone();
+        let obstacles = inline_csv_to_matrix(
+            map.get_layer("Obstacles").int_grid_csv.clone(),
+            map.tile_y(),
+            map.tile_x(),
+        );
 
         println!("Map size: {}x{}", map.tile_x(), map.tile_y());
 
@@ -115,7 +122,7 @@ impl MapBuilder {
 
         for (y, row) in tiles.iter().enumerate() {
             for (x, chunk_tile) in row.iter().enumerate() {
-                let intgrid_value = base[y * map.tile_y() as usize + x];
+                let _intgrid_value = base[y * map.tile_y() as usize + x];
                 let mut chunk = Chunk::default(); // empty chunk
 
                 if chunk_tile.value != 0 {
@@ -164,6 +171,19 @@ impl MapBuilder {
                         chunk.flip_x = true;
                         chunk.flip_y = true;
                     }
+
+                    // Obstacles
+                    if obstacles[y][x] != 0 {
+                        let obstacle_type = ObstacleType::from(&obstacles[y][x]);
+                        self.map.obstacles.push(Obstacle {
+                            chunk: chunk.clone(),
+                            chunk_center: Vec2::new(
+                                (x as f32 * PIXEL_CHUNK_SIZE) + PIXEL_CHUNK_SIZE / 2. - 8.,
+                                -(y as f32 * PIXEL_CHUNK_SIZE) - PIXEL_CHUNK_SIZE / 2. + 8.,
+                            ),
+                            obstacle_type,
+                        });
+                    }
                 }
 
                 self.map.chunks.push(chunk);
@@ -181,7 +201,7 @@ impl MapBuilder {
                         Vec2::new(PIXEL_CHUNK_SIZE * x as f32, -PIXEL_CHUNK_SIZE * y as f32);
                 }
 
-                self.map.chunks.push(chunk);
+                self.map.decor_chunks.push(chunk);
             }
         }
     }
@@ -196,7 +216,9 @@ pub struct Map {
     pub chunk_x: i32,
     pub chunk_y: i32,
     pub chunks: Vec<Chunk>,
+    pub decor_chunks: Vec<Chunk>,
     pub start_position: Vec2,
+    pub obstacles: Vec<Obstacle>,
     // interactables: Vec<Interactable>,
 }
 
@@ -215,4 +237,11 @@ impl Map {
             .filter(|c| c.chunk_type == chunk_type)
             .count() as i32
     }
+}
+
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
+pub struct Obstacle {
+    pub chunk: Chunk,
+    pub chunk_center: Vec2,
+    pub obstacle_type: ObstacleType,
 }

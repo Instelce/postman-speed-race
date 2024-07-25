@@ -1,23 +1,29 @@
 use std::f32::consts::PI;
 
 use bevy::prelude::*;
-use bevy_aseprite_ultra::prelude::{Animation, AsepriteAnimationBundle};
+use bevy_aseprite_ultra::prelude::{Animation, AnimationRepeat, AsepriteAnimationBundle};
 use rand::Rng;
 
-use crate::screen::Screen;
+use crate::{screen::Screen, AppSet};
 
 use super::{
     assets::handles::AsepriteAssets,
     circuit::{Circuit, CircuitDirection},
+    collider::Collider,
     map::chunk::PIXEL_CHUNK_SIZE,
-    spawn::map::{FollowPlayerRotation, PostOffice},
+    restart::Restart,
+    spawn::{
+        map::{ChunkTag, FollowPlayerRotation, ObstacleTag, PostOffice},
+        player::{Player, PlayerController},
+    },
 };
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<HouseOrientation>();
     app.add_systems(
         Update,
-        (rotate_house, follow_player_rotation).run_if(in_state(Screen::Playing)),
+        ((rotate_house, follow_player_rotation, obstacle_check).in_set(AppSet::Update),)
+            .run_if(in_state(Screen::Playing)),
     );
 }
 
@@ -86,5 +92,28 @@ fn follow_player_rotation(
             time.delta_seconds() * 30.,
         );
         transform.translation.z = 0.05;
+    }
+}
+
+fn obstacle_check(
+    time: Res<Time>,
+    mut commands: Commands,
+    mut player_query: Query<(&Collider, &mut Animation, &mut PlayerController), With<Player>>,
+    obstacles_query: Query<&Collider, (With<ObstacleTag>, Without<Player>, Without<ChunkTag>)>,
+) {
+    if let Ok((player_collider, mut animation, mut controller)) = player_query.get_single_mut() {
+        controller.start_timer.tick(time.delta());
+        if !controller.damn && controller.start_timer.finished() {
+            for (obstacle_collider) in obstacles_query.iter() {
+                if player_collider.collide(obstacle_collider) {
+                    controller.damn = true;
+                    animation.play("fall", AnimationRepeat::Count(0));
+                }
+            }
+        }
+
+        if controller.damn && animation.tag != Some("fall".into()) {
+            commands.trigger(Restart);
+        }
     }
 }

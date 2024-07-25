@@ -4,8 +4,8 @@ use bevy_aseprite_ultra::prelude::{Animation, Aseprite, AsepriteAnimationUiBundl
 use super::{
     interaction::InteractionPalette,
     palette::{
-        BACKGROUND, BUTTON_HOVERED_BACKGROUND, BUTTON_PRESSED_BACKGROUND, BUTTON_TEXT, LABEL_TEXT,
-        NODE_BACKGROUND,
+        BACKGROUND, BUTTON_HOVERED_BACKGROUND, BUTTON_PRESSED_BACKGROUND, BUTTON_TEXT, HEADER_TEXT,
+        LABEL_TEXT, NODE_BACKGROUND,
     },
 };
 
@@ -279,9 +279,11 @@ impl<T: Spawn> Widgets for T {
                     text,
                     TextStyle {
                         font_size,
+                        color: HEADER_TEXT,
                         ..default()
                     },
-                ),
+                )
+                .with_text_justify(JustifyText::Center),
             ));
         });
 
