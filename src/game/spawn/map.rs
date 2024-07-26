@@ -12,13 +12,18 @@ use rand::Rng;
 
 use crate::{
     game::{
-        assets::handles::{AsepriteAssets, HouseAssets, TilesetAssets},
+        assets::{
+            handles::{AsepriteAssets, HouseAssets, LdtkAssets, TilesetAssets},
+            loaders::ldtk::{self, LdtkAsset},
+        },
         collider::{Collider, Collision, ExcludeColliderUpdate},
         house::HouseOrientation,
         letter::{LetterBox, LetterLaunchZone, Letters},
         map::{
             builder::MapBuilder,
-            chunk::{ChunkConnextion, ChunkType, RoadChunkType, CHUNK_SIZE, PIXEL_CHUNK_SIZE},
+            chunk::{
+                self, ChunkConnextion, ChunkType, RoadChunkType, CHUNK_SIZE, PIXEL_CHUNK_SIZE,
+            },
             ldtk::Project,
             types::{IntgridType, ObstacleType},
         },
@@ -89,6 +94,9 @@ fn spawn_map(
     tilesets: Res<TilesetAssets>,
     houses: Res<HouseAssets>,
     aseprites: Res<AsepriteAssets>,
+
+    ldtk_assets: Res<Assets<LdtkAsset>>,
+    ldtks: Res<LdtkAssets>,
 ) {
     let mut rng = rand::thread_rng();
 
@@ -97,9 +105,15 @@ fn spawn_map(
     let texture_atlas_layout = texture_atlases.add(layout);
 
     // Build the map
+    // let mut builder = MapBuilder::new(
+    //     Project::new(get_asset_path("maps/maps.ldtk")),
+    //     Project::new(get_asset_path("maps/chunks.ldtk")),
+    // );
+    let maps = ldtks.get("maps");
+    let chunks = ldtks.get("chunks");
     let mut builder = MapBuilder::new(
-        Project::new(get_asset_path("maps/maps.ldtk")),
-        Project::new(get_asset_path("maps/chunks.ldtk")),
+        ldtk_assets.get(&maps).unwrap().project.clone(), // yes, very optimisé
+        ldtk_assets.get(&chunks).unwrap().project.clone(),
     );
 
     builder.build(&trigger.event().level);

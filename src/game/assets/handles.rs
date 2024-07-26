@@ -2,10 +2,11 @@
 
 use bevy::{prelude::*, utils::HashMap};
 use bevy_aseprite_ultra::prelude::Aseprite;
-use bevy_hanabi::EffectAsset;
 use std::path::Path;
 
 use crate::utils::{find_files, get_asset_path, get_assets_dir, get_file_name};
+
+use super::loaders::ldtk::LdtkAsset;
 
 #[derive(Reflect, Deref, DerefMut)]
 pub struct Handles<T>
@@ -45,11 +46,11 @@ where
             }
         }
 
-        // info!(
-        //     "Loading assets which have {:?} extensions : {:?}",
-        //     self.extensions.join(", "),
-        //     assets
-        // );
+        info!(
+            "Loading assets which have {:?} extensions : {:?}",
+            self.extensions.join(", "),
+            assets
+        );
 
         self.handles = assets;
         self
@@ -62,6 +63,7 @@ where
     }
 
     pub fn get(&self, name: &str) -> Handle<T> {
+        info!("Getting handle for {}", name);
         self.handles.get(name).unwrap().clone()
     }
 }
@@ -94,15 +96,6 @@ impl HouseAssets {
 }
 
 #[derive(Resource, Reflect, Deref, DerefMut)]
-pub struct ParticleEffectAssets(Handles<EffectAsset>);
-
-impl ParticleEffectAssets {
-    pub fn new(asset_server: &AssetServer) -> Self {
-        Self(Handles::new(vec!["ron"], Some("particles".into())).load(asset_server))
-    }
-}
-
-#[derive(Resource, Reflect, Deref, DerefMut)]
 pub struct SfxAssets(Handles<AudioSource>);
 
 impl SfxAssets {
@@ -126,5 +119,14 @@ pub struct FontAssets(Handles<Font>);
 impl FontAssets {
     pub fn new(asset_server: &AssetServer) -> Self {
         Self(Handles::new(vec!["ttf"], Some("fonts".into())).load(asset_server))
+    }
+}
+
+#[derive(Resource, Reflect, Deref, DerefMut)]
+pub struct LdtkAssets(Handles<LdtkAsset>);
+
+impl LdtkAssets {
+    pub fn new(asset_server: &AssetServer) -> Self {
+        Self(Handles::new(vec!["ldtk"], Some("maps".into())).load(asset_server))
     }
 }

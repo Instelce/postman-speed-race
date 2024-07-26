@@ -33,8 +33,20 @@ fn enter_credits(mut commands: Commands, aseprite_handles: Res<AsepriteAssets>) 
         .ui_root(RootAnchor::Center)
         .insert(StateScoped(Screen::Credits))
         .with_children(|children| {
+            // jen ai mar
+            let lines: Vec<String> = vec![
+                "# Credits".to_string(),
+                "* Bevy icon: [MIT License](licenses/Bevy_MIT_License.md);".to_string(),
+                "* Houses and some tiles from \"MetroCity\" by JIK-A-4 on itch.io".to_string(),
+                "* Stars from \"Pixel Art Animated Star\" by Narik on itch.io".to_string(),
+                "* Pixelify Sans: [OFL License](licenses/Pixelify_Sans_Licence.md)".to_string(),
+                "* \"ChillMenu\" by NotJam".to_string(),
+                "* \"RUNAWAY\" by sergiofuentes".to_string(),
+                "* \"Go\" by Tallbeard Studios".to_string(),
+            ];
+
             // Spawn credits from the CREDITS.md file
-            for line in read_lines(&get_root_file("credits/CREDITS.md")) {
+            for line in lines.iter() {
                 if line.starts_with("# ") {
                     children.heading(line.replace("# ", ""), HeadingSize::H1);
                 }

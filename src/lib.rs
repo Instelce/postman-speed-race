@@ -13,7 +13,6 @@ use bevy::{
     winit::WinitWindows,
 };
 use bevy_aseprite_ultra::BevySprityPlugin;
-use bevy_hanabi::HanabiPlugin;
 use game::camera::MainCamera;
 use utils::get_asset_path;
 use winit::window::Icon;
@@ -32,6 +31,7 @@ impl Plugin for AppPlugin {
         app.add_systems(Startup, spawn_camera);
 
         // Set the game icon.
+        #[cfg(not(target_family = "wasm"))]
         app.add_systems(Startup, set_window_icon);
 
         // Add Bevy plugins.
@@ -78,7 +78,7 @@ impl Plugin for AppPlugin {
         );
 
         // Add external crates plugins.
-        app.add_plugins((BevySprityPlugin, HanabiPlugin));
+        app.add_plugins((BevySprityPlugin));
 
         // Add other plugins
         app.add_plugins((screen::plugin, game::plugin, ui::plugin));

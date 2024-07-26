@@ -21,7 +21,7 @@ pub struct GameSave {
 }
 
 impl GameSave {
-    pub fn load() -> Self {
+    pub fn load(levels: Vec<LevelData>) -> Self {
         let mut game = GameSave::default();
         let path = &get_asset_path("data/save.ron");
 
@@ -30,25 +30,15 @@ impl GameSave {
             game = ron::from_str(&file).unwrap();
         } else {
             // create the file if it doesn't exist
-            let mut file = File::create("assets/data/save.ron").unwrap();
-            file.write_all(&ron::to_string(&game).unwrap().as_bytes())
-                .unwrap();
-        }
-
-        let maps = Project::new(get_asset_path("maps/maps.ldtk"));
-        if maps.levels.len() != game.levels.len() {
-            for level in &maps.levels {
-                let name = level
-                    .get_field("Name")
-                    .value
-                    .as_ref()
-                    .unwrap()
-                    .to_string()
-                    .clone()
-                    .replace("\"", "");
-                game.levels.push(LevelData { name });
+            #[cfg(not(target_family = "wasm"))]
+            {
+                let mut file = File::create("assets/data/save.ron").unwrap();
+                file.write_all(&ron::to_string(&game).unwrap().as_bytes())
+                    .unwrap();
             }
         }
+
+        game.levels = levels;
 
         game
     }
@@ -67,7 +57,10 @@ fn save(mut game_save: ResMut<GameSave>, current_level: Res<CurrentLevel>) {
     {
         game_save.last_level_passed += 1;
     }
-    let mut file = File::create("assets/data/save.ron").unwrap();
-    file.write_all(&ron::to_string(&game_save.as_ref()).unwrap().as_bytes())
-        .unwrap();
+    #[cfg(not(target_family = "wasm"))]
+    {
+        let mut file = File::create("assets/data/save.ron").unwrap();
+        file.write_all(&ron::to_string(&game_save.as_ref()).unwrap().as_bytes())
+            .unwrap();
+    }
 }

@@ -1,7 +1,7 @@
 mod json_1_5_3;
 use std::{fs::File, io::BufReader, path::Path};
 
-use bevy::log::tracing_subscriber::layer;
+use bevy::asset::embedded_asset;
 pub use json_1_5_3::*;
 
 impl Project {

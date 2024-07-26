@@ -146,9 +146,11 @@ jobs:
             mv tmp/binary/*'${{ matrix.binary_ext }}' '${{ env.OUT_DIR }}/${{ env.PACKAGE_NAME }}${{ matrix.binary_ext }}'
           fi
 
-      - name: Add assets to package (non-Web)
+      - name: Add assets and credits to package (non-Web)
         if: ${{ matrix.platform != 'web' }}
-        run: cp -r '${{ env.ASSETS_DIR }}' '${{ env.OUT_DIR }}' || true # Ignore error if assets folder does not exist
+        run: |
+          cp -r 'credits' '${{ env.OUT_DIR }}' || true
+          cp -r '${{ env.ASSETS_DIR }}' '${{ env.OUT_DIR }}' || true
 
       - name: Add app metadata to package (MacOS)
         if: ${{ matrix.platform == 'macos' }}

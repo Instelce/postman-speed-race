@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_aseprite_ultra::prelude::{Animation, AnimationRepeat};
-use bevy_hanabi::{velocity, EffectProperties, EffectSpawner};
 
 use crate::screen::Screen;
 
@@ -25,26 +24,18 @@ fn animate_player(
         ),
         With<Player>,
     >,
-    mut particles_query: Query<(&mut EffectSpawner, &mut EffectProperties), With<PlayerParticles>>,
 ) {
-    if query.is_empty() || particles_query.is_empty() {
+    if query.is_empty() {
         return;
     }
 
     let (transform, mut animation, movement, controller, velocity) = query.single_mut();
-    let (mut spawner, mut properties) = particles_query.single_mut();
 
     if animation.tag != Some("launch-letter".into()) {
         if velocity.0.length() < 0.2 && velocity.0.length() > -0.2 {
             animation.play("pause", AnimationRepeat::Loop);
         } else if movement.friction >= 12. {
             animation.play("brake", AnimationRepeat::Loop);
-        }
-
-        // particles
-        if velocity.0.length() > 0.4 {
-            properties.set("velocity", (movement.direction.extend(0.) * -4.).into());
-            spawner.reset();
         }
 
         if velocity.0.length() > 2. {
