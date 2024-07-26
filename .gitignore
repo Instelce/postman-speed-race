@@ -3,7 +3,6 @@
 # Trunk builds
 /web/dist/
 .cargo/
-Cargo.lock
 
 /assets/data/save.ron
 /assets/maps/chunks

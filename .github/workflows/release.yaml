@@ -6,8 +6,6 @@ on:
     tags:
       # Pattern syntax: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
       - "v[0-9]+.[0-9]+.[0-9]+*"
-  paths-ignore:
-    - 'rust-toolchain.toml'
   # Trigger this workflow manually via workflow dispatch.
   workflow_dispatch:
     inputs:
