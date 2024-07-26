@@ -2,6 +2,7 @@
 /target
 # Trunk builds
 /web/dist/
+.cargo/
 
 /assets/data/save.ron
 /assets/maps/chunks
