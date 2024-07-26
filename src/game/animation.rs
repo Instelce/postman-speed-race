@@ -31,6 +31,10 @@ fn animate_player(
 
     let (transform, mut animation, movement, controller, velocity) = query.single_mut();
 
+    if controller.damn {
+        return;
+    }
+
     if animation.tag != Some("launch-letter".into()) {
         if velocity.0.length() < 0.2 && velocity.0.length() > -0.2 {
             animation.play("pause", AnimationRepeat::Loop);

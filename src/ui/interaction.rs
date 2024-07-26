@@ -1,6 +1,8 @@
 use bevy::{ecs::query, prelude::*};
 use bevy_aseprite_ultra::prelude::{Animation, AnimationDirection, AnimationRepeat};
 
+use crate::game::audio::sfx::PlaySfx;
+
 use super::widgets::DisableButton;
 
 pub(super) fn plugin(app: &mut App) {
@@ -39,17 +41,19 @@ fn apply_interaction_palette(
     }
 }
 
-fn apply_interaction_sprite(mut query: InteractionQuery<&mut Animation>) {
+fn apply_interaction_sprite(mut commands: Commands, mut query: InteractionQuery<&mut Animation>) {
     for (interaction, mut animation) in query.iter_mut() {
         match interaction {
             Interaction::None => {
                 animation.play("default", AnimationRepeat::Loop);
             }
             Interaction::Hovered => {
+                commands.trigger(PlaySfx::Key("button_hovered".to_string()));
                 animation.play("hovered-transition", AnimationRepeat::Count(0));
                 animation.then("hovered", AnimationRepeat::Loop);
             }
             Interaction::Pressed => {
+                commands.trigger(PlaySfx::Key("button_pressed".to_string()));
                 animation.play("pressed", AnimationRepeat::Loop);
             }
         };

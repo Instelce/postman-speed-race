@@ -16,6 +16,7 @@ use super::{
         map::{ChunkTag, FollowPlayerRotation, ObstacleTag, PostOffice},
         player::{Player, PlayerController},
     },
+    ui::InfoText,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -92,6 +93,7 @@ fn follow_player_rotation(
                 Quat::from_axis_angle(Vec3::Z, reset_angle),
                 time.delta_seconds() * 30.,
             );
+
             transform.translation.z = 0.05;
         }
     }
@@ -102,6 +104,7 @@ fn obstacle_check(
     mut commands: Commands,
     mut player_query: Query<(&Collider, &mut Animation, &mut PlayerController), With<Player>>,
     obstacles_query: Query<&Collider, (With<ObstacleTag>, Without<Player>, Without<ChunkTag>)>,
+    mut info_text: ResMut<InfoText>,
 ) {
     if let Ok((player_collider, mut animation, mut controller)) = player_query.get_single_mut() {
         controller.start_timer.tick(time.delta());
@@ -110,12 +113,17 @@ fn obstacle_check(
                 if player_collider.collide(obstacle_collider) {
                     controller.damn = true;
                     animation.play("fall", AnimationRepeat::Count(0));
+                    animation.clear_queue();
                 }
             }
         }
 
-        if controller.damn && animation.tag != Some("fall".into()) {
-            commands.trigger(Restart);
+        if controller.damn {
+            controller.obstacle_timer.tick(time.delta());
+            info_text.set("Oh no! You've broken a leg!");
+            if controller.obstacle_timer.finished() {
+                commands.trigger(Restart);
+            }
         }
     }
 }

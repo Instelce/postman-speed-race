@@ -7,6 +7,7 @@ use crate::{
         circuit::{Circuit, CircuitDuration, EndCircuitTimer},
         house::HouseRotate,
         letter::Letters,
+        restart::RestartCooldown,
         spawn::{level::SpawnLevel, map::MapTag},
         ui::{spawn_ui, InfoText},
         GameState,
@@ -25,9 +26,12 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
-#[derive(Resource, Debug, Default, Clone, Copy, PartialEq, Eq, Reflect)]
+#[derive(Resource, Debug, Default, Clone, Copy, PartialEq, Reflect)]
 #[reflect(Resource)]
-pub struct CurrentLevel(pub i32);
+pub struct CurrentLevel {
+    pub indice: i32,
+    pub map_size: Vec2,
+}
 
 fn enter_playing(
     mut commands: Commands,
@@ -37,7 +41,7 @@ fn enter_playing(
     mut state: ResMut<NextState<GameState>>,
 ) {
     state.set(GameState::Run);
-    commands.trigger(SpawnLevel(current_level.0));
+    commands.trigger(SpawnLevel(current_level.indice));
 
     // set background
     clear_color.0 = BACKGROUND;
@@ -51,6 +55,7 @@ fn enter_playing(
     commands.init_resource::<EndCircuitTimer>();
     commands.init_resource::<InfoText>();
     commands.init_resource::<CircuitDuration>();
+    commands.init_resource::<RestartCooldown>();
 
     commands.trigger(PlaySoundtrack::Key("Go".into()));
 }
@@ -70,9 +75,9 @@ fn exit_playing(
     commands.remove_resource::<EndCircuitTimer>();
     commands.remove_resource::<InfoText>();
     commands.remove_resource::<CircuitDuration>();
+    commands.remove_resource::<RestartCooldown>();
 
     commands.trigger(PlaySoundtrack::Disable);
-    commands.trigger(PlaySoundtrack::Key("ChillMenu".into()));
 }
 
 fn clear_entities(mut commands: Commands, query: Query<(Entity, &StateScoped<Screen>)>) {
@@ -83,6 +88,7 @@ fn clear_entities(mut commands: Commands, query: Query<(Entity, &StateScoped<Scr
     }
 }
 
-fn return_to_title_screen(mut next_screen: ResMut<NextState<Screen>>) {
+fn return_to_title_screen(mut commands: Commands, mut next_screen: ResMut<NextState<Screen>>) {
     next_screen.set(Screen::Title);
+    commands.trigger(PlaySoundtrack::Key("ChillMenu".into()));
 }

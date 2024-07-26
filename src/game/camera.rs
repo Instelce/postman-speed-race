@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::{prelude::*, window::PrimaryWindow};
 
 use crate::screen::Screen;
@@ -27,9 +29,9 @@ fn follow_target(
             let mut offset = if circuit.in_turn {
                 Vec3::ZERO
             } else if circuit.current_orientation == CircuitOrientation::Vertical {
-                Vec3::Y * 20.
+                Vec3::Y * 50.
             } else if circuit.current_orientation == CircuitOrientation::Horizontal {
-                Vec3::X * 20.
+                Vec3::X * 50.
             } else {
                 Vec3::ZERO
             };
@@ -42,7 +44,7 @@ fn follow_target(
 
             offset = if circuit.turn_count >= 4 {
                 offset
-            } else if circuit.turn_count >= 2 {
+            } else if circuit.turn_count >= 2 || circuit.turn_count == -1 {
                 -offset
             } else {
                 offset
@@ -52,9 +54,13 @@ fn follow_target(
                 target_transform.translation + offset,
                 time.delta_seconds() * 12.,
             );
+            // camera_transform.rotation = camera_transform.rotation.lerp(
+            //     Quat::from_axis_angle(Vec3::Z, reset_angle),
+            //     time.delta_seconds() * 5.,
+            // );
             camera_transform.rotation = camera_transform
                 .rotation
-                .lerp(target_transform.rotation, time.delta_seconds() * 5.);
+                .lerp(target_transform.rotation, time.delta_seconds() * 4.);
         }
     }
 }

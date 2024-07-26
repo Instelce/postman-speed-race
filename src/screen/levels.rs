@@ -79,7 +79,7 @@ fn handle_levels_action(
         if matches!(interaction, Interaction::Pressed) {
             match action {
                 LevelsAction::Play(i) => {
-                    current_level.0 = *i;
+                    current_level.indice = *i;
                     next_screen.set(Screen::Playing);
                 }
                 LevelsAction::Back => next_screen.set(Screen::Title),

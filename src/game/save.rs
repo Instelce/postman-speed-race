@@ -53,7 +53,7 @@ pub struct LevelData {
 
 fn save(mut game_save: ResMut<GameSave>, current_level: Res<CurrentLevel>) {
     if game_save.last_level_passed < game_save.levels.len() as i32
-        && current_level.0 == game_save.last_level_passed
+        && current_level.indice == game_save.last_level_passed
     {
         game_save.last_level_passed += 1;
     }

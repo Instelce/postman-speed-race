@@ -63,6 +63,7 @@ where
     }
 
     pub fn get(&self, name: &str) -> Handle<T> {
+        #[cfg(target_family = "wasm")]
         info!("Getting handle for {}", name);
         self.handles.get(name).unwrap().clone()
     }

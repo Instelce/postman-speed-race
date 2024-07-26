@@ -7,6 +7,7 @@ use crate::{screen::Screen, AppSet};
 use super::{
     circuit::{Circuit, CircuitDirection, EndCircuitTimer},
     collider::Collider,
+    restart::RestartCooldown,
     spawn::{
         map::{ChunkTag, NotRoadTile},
         player::{Player, PlayerController, PlayerMovement},
@@ -30,6 +31,9 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
+const PLAYER_FRICTION: f32 = 3.;
+const PLAYER_OFFROAD_FRICTION: f32 = 20.;
+
 #[derive(Component, Reflect, Debug, Default, Deref, DerefMut)]
 #[reflect(Component)]
 pub struct Velocity(pub Vec2);
@@ -48,15 +52,20 @@ pub fn player_movements(
         With<Player>,
     >,
     mut circuit: ResMut<Circuit>,
+    restart_timer: Res<RestartCooldown>,
 ) {
-    if let Ok((mut transform, mut velocity, mut movement, _)) = query.get_single_mut() {
+    if !restart_timer.0.finished() {
+        return;
+    }
+
+    if let Ok((mut transform, mut velocity, mut movement, controller)) = query.get_single_mut() {
         if end_timer.elapsed_secs() > 1. {
             return;
         }
 
         let mut rotation_factor = 0.;
 
-        if !(end_timer.elapsed_secs() > 0.) {
+        if !(end_timer.elapsed_secs() > 0.) && !controller.damn {
             // vertical axis
             if keys.pressed(KeyCode::KeyW) {
                 movement.factor = 1.;
@@ -71,7 +80,7 @@ pub fn player_movements(
         if keys.pressed(KeyCode::KeyS) {
             movement.friction = 12.;
         } else if movement.friction == 12. {
-            movement.friction = 2.;
+            movement.friction = PLAYER_FRICTION;
         }
 
         // horizontal axis
@@ -224,10 +233,10 @@ fn off_the_road(
         }
 
         if let Some(collider) = &controller.actual_collision {
-            movement.friction = 20.;
+            movement.friction = PLAYER_OFFROAD_FRICTION;
 
             if !player_collider.collide(collider) {
-                movement.friction = 2.;
+                movement.friction = PLAYER_FRICTION;
                 controller.actual_collision = None;
             }
         }
@@ -235,7 +244,7 @@ fn off_the_road(
         if let Some(collider) = &controller.actual_chunk {
             if !player_collider.collide(collider) {
                 info_text.set("Press R to restart");
-                movement.friction = 20.;
+                movement.friction = PLAYER_OFFROAD_FRICTION;
                 controller.actual_chunk = None;
             }
         }

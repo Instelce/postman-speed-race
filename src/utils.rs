@@ -109,6 +109,7 @@ pub fn find_files(path: &Path, extention: &str) -> Vec<String> {
             "/assets/images/obstacles/work-cone.ase".to_string(),
             "/assets/images/obstacles/manhole-cover.ase".to_string(),
             "/assets/images/obstacles/water-puddle.ase".to_string(),
+            "/assets/images/obstacles/road-work.ase".to_string(),
             "/assets/images/splash.png".to_string(),
             "/assets/images/with_bevy.png".to_string(),
             "/assets/images/letter-box.ase".to_string(),
@@ -147,6 +148,9 @@ pub fn find_files(path: &Path, extention: &str) -> Vec<String> {
             "/assets/upload/letter.png".to_string(),
             "/assets/upload/bg.png".to_string(),
             "/assets/upload/banner.png".to_string(),
+            "/assets/audio/sfx/button_hovered.ogg".to_string(),
+            "/assets/audio/sfx/button_pressed.ogg".to_string(),
+            "/assets/audio/sfx/launch.ogg".to_string(),
         ];
 
         // filter all paths with the extention and the path parameter

@@ -11,6 +11,7 @@ use crate::{
 
 use super::{
     assets::handles::AsepriteAssets,
+    audio::sfx::PlaySfx,
     collider::Collider,
     spawn::player::{self, Player, PlayerController},
     ui::InfoText,
@@ -186,7 +187,12 @@ pub fn launch_letter(
                 && controller.can_launch_letter
                 && !controller.letter_launched
             {
-                // Spawn letter
+                commands.trigger(PlaySfx::Key("launch".into()));
+
+                // Animate player
+                animation.play("launch-letter", AnimationRepeat::Count(0));
+                animation.then("ride", AnimationRepeat::Loop);
+
                 commands.spawn((
                     Name::new("Letter"),
                     StateScoped(Screen::Playing),
@@ -202,10 +208,6 @@ pub fn launch_letter(
                     Collider::rect(4., 4.),
                     Letter(target_transform.translation()),
                 ));
-
-                // Animate player
-                animation.play("launch-letter", AnimationRepeat::Count(0));
-                animation.then("ride", AnimationRepeat::Loop);
 
                 controller.letter_launched = true;
             }

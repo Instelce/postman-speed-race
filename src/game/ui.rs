@@ -3,6 +3,7 @@ use bevy::{prelude::*, ui::Val::*};
 use bevy_aseprite_ultra::prelude::{Animation, AsepriteAnimationUiBundle, AsepriteSliceUiBundle};
 use ui_palette::BACKGROUND;
 
+use crate::game::audio::soundtrack::PlaySoundtrack;
 use crate::screen::playing::CurrentLevel;
 use crate::ui::prelude::*;
 use crate::{screen::Screen, ui::prelude::Containers};
@@ -88,7 +89,7 @@ pub struct InfoTextContainer {
 #[reflect(Component)]
 pub struct CircuitDurationText;
 
-pub fn spawn_ui(mut commands: Commands, fonts: Res<FontAssets>) {
+pub fn spawn_ui(mut commands: Commands, fonts: Res<FontAssets>, current_level: Res<CurrentLevel>) {
     commands.spawn((
         Name::new("Letter UI Root"),
         NodeBundle {
@@ -186,6 +187,8 @@ fn spawn_end_ui(
     game_save: Res<GameSave>,
     aseprites: Res<AsepriteAssets>,
 ) {
+    commands.trigger(PlaySoundtrack::Disable);
+
     println!("End UI");
     commands
         .ui_root(RootAnchor::Center)
@@ -241,7 +244,7 @@ fn spawn_end_ui(
             children
                 .button_sprite("Restart", aseprites.get("button"), None)
                 .insert(EndAction::Restart);
-            if current_level.0 < game_save.levels.len() as i32 - 1 {
+            if current_level.indice < game_save.levels.len() as i32 - 1 {
                 children
                     .button_sprite("Next", aseprites.get("button"), None)
                     .insert(EndAction::Next);
@@ -264,12 +267,15 @@ fn handle_end_action(
             match action {
                 EndAction::Next => {
                     commands.trigger(Restart);
-                    current_level.0 += 1;
+                    current_level.indice += 1;
                 }
                 EndAction::Restart => {
                     commands.trigger(Restart);
                 }
-                EndAction::Menu => next_screen.set(Screen::Title),
+                EndAction::Menu => {
+                    commands.trigger(PlaySoundtrack::Key("ChillMenu".into()));
+                    next_screen.set(Screen::Title);
+                }
             }
         }
     }

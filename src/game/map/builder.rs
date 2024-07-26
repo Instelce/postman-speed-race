@@ -151,7 +151,7 @@ impl MapBuilder {
                     // set start position
                     if chunk_type == ChunkType::PostOffice {
                         self.map.start_position = Vec2::new(
-                            chunk.position.x + PIXEL_CHUNK_SIZE - 8.,
+                            chunk.position.x + PIXEL_CHUNK_SIZE + 16.,
                             chunk.position.y - PIXEL_CHUNK_SIZE / 2. + 8.,
                         )
                     }

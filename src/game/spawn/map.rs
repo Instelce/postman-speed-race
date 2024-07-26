@@ -454,7 +454,7 @@ fn spawn_map(
     commands.entity(map_entity).with_children(|children| {
         for obstacle in map.obstacles.iter() {
             let aseprite = match &obstacle.obstacle_type {
-                ObstacleType::RoadWork => "manhole-cover",
+                ObstacleType::RoadWork => "road-work",
                 ObstacleType::WatterPuddle => "water-puddle",
                 _ => "",
             };
@@ -474,17 +474,22 @@ fn spawn_map(
                 Vec2::X * place_rand
             };
 
-            let angle = if is_horizontal { -PI / 2. } else { 0. };
-
-            println!(
-                "> {:?}, {:?}, {}, {}",
-                obstacle.obstacle_type, place, is_horizontal, place_rand
-            );
+            let angle = if is_horizontal { PI / 2. } else { 0. };
 
             let tag = match &obstacle.obstacle_type {
                 ObstacleType::RoadWork => None,
                 ObstacleType::WatterPuddle => Some(rng.gen_range(1..=2).to_string()),
                 _ => None,
+            };
+
+            let collider = match &obstacle.obstacle_type {
+                ObstacleType::RoadWork => {
+                    Collider::new_rect(obstacle.chunk_center + place, Vec2::new(10., 15.))
+                }
+                ObstacleType::WatterPuddle => {
+                    Collider::new_circle(obstacle.chunk_center + place, 10.)
+                }
+                _ => Collider::new_rect(obstacle.chunk_center + place, Vec2::splat(10.)),
             };
 
             children.spawn((
@@ -499,7 +504,8 @@ fn spawn_map(
                     ..default()
                 },
                 ObstacleTag,
-                Collider::new_rect(obstacle.chunk_center + place, Vec2::splat(10.)),
+                collider,
+                // Collider::new_rect(obstacle.chunk_center + place, Vec2::splat(10.)),
             ));
         }
     });

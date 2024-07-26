@@ -1,3 +1,4 @@
+use bevy::color::palettes::css::WHITE;
 use bevy::prelude::*;
 use bevy_aseprite_ultra::prelude::Aseprite;
 
@@ -18,7 +19,13 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, check_all_loaded.run_if(in_state(Screen::Loading)));
 }
 
-fn enter_loading(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn enter_loading(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut clear_color: ResMut<ClearColor>,
+) {
+    clear_color.0 = Color::Srgba(WHITE);
+
     commands
         .ui_root(RootAnchor::Center)
         .insert(StateScoped(Screen::Loading))
