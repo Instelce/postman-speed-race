@@ -89,6 +89,6 @@ fn clear_entities(mut commands: Commands, query: Query<(Entity, &StateScoped<Scr
 }
 
 fn return_to_title_screen(mut commands: Commands, mut next_screen: ResMut<NextState<Screen>>) {
-    next_screen.set(Screen::Title);
     commands.trigger(PlaySoundtrack::Key("ChillMenu".into()));
+    next_screen.set(Screen::Title);
 }
